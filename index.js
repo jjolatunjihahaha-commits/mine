@@ -6,7 +6,7 @@ const states = [
 ];
 let idx = 0,
     dayCount = 1,
-    date = { day:1, month:1, year:1 };
+    date = { day:1, month:1, year:2025 };
 
 const intervalMs = 5 * 60 * 1000;
 
