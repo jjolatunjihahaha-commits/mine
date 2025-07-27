@@ -1,6 +1,6 @@
 {
-  "display_name": "Time‑Cycle Gradient Clock v2.3.1",
-  "version": "2.3.1",
+  "display_name": "Time‑Cycle Gradient Clock v2.5.0",
+  "version": "2.5.0",
   "author": "YourName",
   "loading_order": 10,
   "js": "index.js",
