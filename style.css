@@ -14,7 +14,7 @@
   left: var(--gap);
   background: #2e3138;
   padding: var(--padding);
-  width: 200px;
+  width: 240px;
   border-radius: var(--radius);
   box-shadow: 0 6px 18px rgba(0,0,0,0.6);
   color: #e0e2e5;
@@ -40,6 +40,7 @@
   color: #b0b3b7;
 }
 
+/* Bar + nav arrows container */
 #bar-container {
   position: relative;
   width: 100%;
@@ -47,12 +48,30 @@
   align-items: center;
 }
 
+/* Manual nav arrows */
+.nav-arrow {
+  width: 24px;
+  height: 24px;
+  background: #3b3f4a;
+  border: none;
+  border-radius: 4px;
+  color: #f8f9f9;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-arrow:hover {
+  background: #505467;
+}
+
+/* Gradient bar */
 #progress-bar {
   flex: 1;
   height: var(--bar-height);
   margin: 0 var(--gap);
   border-radius: 6px;
-  background: linear-gradient(to right,
+  background: linear-gradient(
+    to right,
     orange 0%, orange 20%,
     yellow 20%, yellow 40%,
     pink 40%, pink 60%,
@@ -63,6 +82,7 @@
   overflow: visible;
 }
 
+/* Pointer under bar */
 #progress-pointer {
   position: absolute;
   top: calc(100% + 2px);
