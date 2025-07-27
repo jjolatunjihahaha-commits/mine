@@ -1,6 +1,6 @@
 {
-  "display_name": "Time-Cycle Gradient Clock v1.5",
-  "version": "1.5.0",
+  "display_name": "Time‑Cycle Gradient Arrow Bar v1.6",
+  "version": "1.6.0",
   "author": "YourName",
   "loading_order": 10,
   "js": "index.js",
