@@ -12,14 +12,13 @@
 #calendar-clock {
   position: fixed;
   background: #2e3138;
-  min-width: 180px;                 /* prevent too narrow */
-  width: 260px;                     /* default; JS will override if saved */
+  min-width: 180px;               /* stop it getting too narrow */
   border-radius: var(--radius);
   box-shadow: 0 8px 22px rgba(0,0,0,0.7);
   color: #e2e4e7;
   font-family: 'Inter', sans-serif;
   user-select: none;
-  cursor: move;
+  cursor: move;                   /* overridden for handle */
   z-index: 9999;
 
   overflow: hidden;
@@ -55,9 +54,10 @@
 #time-label   { font-size: var(--font-title); font-weight: 600; color:#fff; text-align:center; letter-spacing:.2px; }
 #day-label    { font-size: var(--font-body);  font-weight: 600; color:#d0d2d6; margin:0; }
 #weekday-label{ font-size: var(--font-body);  font-weight: 500; color:#c7c9ce; margin:0; }
-#date-label   { font-size: calc(var(--font-body) - .06rem); font-weight:500; color:#a5a7ac; margin:0 0 2px; }
-#day-label::after {
-  content:''; display:block; width:46%; height:1px; margin:6px auto 4px;
+#date-label   { font-size: calc(var(--font-body) - .06rem); font-weight: 500; color:#a5a7ac; margin:0 0 2px; }
+
+#day-label::after{
+  content:'';display:block;width:46%;height:1px;margin:6px auto 4px;
   background:linear-gradient(90deg,transparent,#4d515b 40%,#4d515b 60%,transparent);
 }
 
@@ -65,7 +65,7 @@
 #summary-label { display:none; font-size:var(--font-body); font-weight:600; color:#dcdedf; margin:0; }
 
 /* bar & pointer */
-#bar-container { width:100%; display:flex; align-items:center; }
+#bar-container{ width:100%; display:flex; align-items:center; }
 .nav-arrow{ width:26px;height:26px;background:#3b3f4a;border:none;border-radius:6px;color:#f6f7f8;
   font-size:17px;cursor:pointer;transition:background .2s;}
 .nav-arrow:hover{background:#565a6c;}
@@ -74,13 +74,14 @@
 #progress-pointer{position:absolute;top:calc(100% + 2px);left:0%;width:0;height:0;transform:translateX(-50%);
   border-left:var(--arrow-size) solid transparent;border-right:var(--arrow-size) solid transparent;border-bottom:var(--arrow-size) solid #fafafa;transition:left .3s ease;}
 
-/* resize handle */
+/* resize handle – little stripes bottom‑right */
 #resize-handle{
   position:absolute;
   width:14px;height:14px;
   right:3px;bottom:3px;
   cursor:se-resize;
-  background:linear-gradient(135deg,transparent 40%,#c5c7cc 40%,#c5c7cc 60%,transparent 60%);
+  background:linear-gradient(135deg,
+     transparent 40%, #c5c7cc 40%, #c5c7cc 60%, transparent 60%);
   opacity:.65;
 }
 #calendar-clock.collapsed #resize-handle{display:none;}
