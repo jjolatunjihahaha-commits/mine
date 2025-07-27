@@ -1,0 +1,29 @@
+#calendar-clock {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  font: 14px sans-serif;
+  z-index: 9999;
+  text-align: center;
+}
+#manual-buttons {
+  margin-top: 6px;
+}
+#manual-buttons button {
+  margin: 2px;
+  padding: 4px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#time-state {
+  font-weight: bold;
+  display: block;
+}
+#date-display {
+  font-size: 12px;
+  margin-top: 4px;
+}
