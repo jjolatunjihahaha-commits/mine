@@ -28,15 +28,14 @@
   z-index: 9999;
 }
 
-/* ── tiny edit button ── */
-#calendar-clock { position: fixed; }               /* already fixed, ensures relative context */
+/* tiny edit button */
 #edit-date-btn {
   position: absolute;
   top: 6px;
   right: 8px;
   background: transparent;
   border: none;
-  font-size: 18px;          /* emoji size */
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
   opacity: 0.7;
@@ -44,7 +43,7 @@
 }
 #edit-date-btn:hover { opacity: 1; }
 
-/* ── typography ── */
+/* typography */
 #time-label {
   font-size: var(--font-title);
   font-weight: 600;
@@ -52,21 +51,18 @@
   text-align: center;
   letter-spacing: 0.2px;
 }
-
 #day-label {
   font-size: var(--font-body);
   font-weight: 600;
   color: #d0d2d6;
   margin: 0;
 }
-
 #date-label {
   font-size: calc(var(--font-body) - 0.06rem);
   font-weight: 500;
   color: #a5a7ac;
   margin: 0 0 2px;
 }
-
 /* decorative divider */
 #day-label::after {
   content: '';
@@ -83,7 +79,6 @@
   display: flex;
   align-items: center;
 }
-
 .nav-arrow {
   width: 26px;
   height: 26px;
@@ -113,15 +108,16 @@
   overflow: visible;
 }
 
+/* ▼▼  fixed pointer orientation  ▼▼ */
 #progress-pointer {
   position: absolute;
-  top: calc(100% + 2px);
+  top: calc(100% + 2px);          /* stays below the bar */
+  left: 0%;
   width: 0;
   height: 0;
-  left: 0%;
   transform: translateX(-50%);
-  border-left: var(--arrow-size) solid transparent;
+  border-left:  var(--arrow-size) solid transparent;
   border-right: var(--arrow-size) solid transparent;
-  border-top: var(--arrow-size) solid #fafafa;
+  border-bottom: var(--arrow-size) solid #fafafa;  /* arrow now points UP */
   transition: left 0.3s ease-in-out;
 }
