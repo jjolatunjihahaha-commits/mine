@@ -12,9 +12,9 @@
   position: fixed;
   top: var(--gap);
   left: var(--gap);
+  width: 220px;
   background: #2e3138;
   padding: var(--padding);
-  width: 220px;
   border-radius: var(--radius);
   box-shadow: 0 6px 18px rgba(0,0,0,0.6);
   color: #e0e2e5;
@@ -40,16 +40,15 @@
   color: #b0b3b7;
 }
 
-/* Phase emojis row */
 #phase-row {
   display: flex;
   justify-content: space-between;
   width: 100%;
   padding: 0 var(--gap);
-  font-size: 18px;
+  font-size: 12px;
+  color: #c0c2c5;
 }
 
-/* Gradient bar container */
 #bar-container {
   position: relative;
   width: 100%;
@@ -57,7 +56,6 @@
   align-items: center;
 }
 
-/* Manual arrows */
 .nav-arrow {
   width: 20px;
   height: 20px;
@@ -73,12 +71,11 @@
   background: #505467;
 }
 
-/* The gradient bar */
 #progress-bar {
   flex: 1;
   height: var(--bar-height);
   margin: 0 var(--gap);
-  border-radius: var(--bar-height);
+  border-radius: calc(var(--bar-height) / 2);
   background: linear-gradient(to right,
     orange 0%, orange 20%,
     yellow 20%, yellow 40%,
@@ -90,7 +87,6 @@
   overflow: visible;
 }
 
-/* Pointer arrow under bar */
 #progress-pointer {
   position: absolute;
   top: calc(100% + 2px);
