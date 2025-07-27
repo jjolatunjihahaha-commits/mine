@@ -35,12 +35,19 @@
   text-align: center;
 }
 
-#date-label {
+#day-label {
   font-size: var(--font-body);
+  font-weight: 500;
   color: #b0b3b7;
+  margin: 0;
 }
 
-/* Bar + nav arrows container */
+#date-label {
+  font-size: calc(var(--font-body) - 0.1rem);
+  color: #8f9194;
+  margin: 0;
+}
+
 #bar-container {
   position: relative;
   width: 100%;
@@ -48,7 +55,6 @@
   align-items: center;
 }
 
-/* Manual nav arrows */
 .nav-arrow {
   width: 24px;
   height: 24px;
@@ -64,7 +70,6 @@
   background: #505467;
 }
 
-/* Gradient bar */
 #progress-bar {
   flex: 1;
   height: var(--bar-height);
@@ -82,7 +87,6 @@
   overflow: visible;
 }
 
-/* Pointer under bar */
 #progress-pointer {
   position: absolute;
   top: calc(100% + 2px);
@@ -92,6 +96,6 @@
   transform: translateX(-50%);
   border-left: var(--arrow-size) solid transparent;
   border-right: var(--arrow-size) solid transparent;
-  border-top: var(--arrow-size) solid #f8f9f9;
+  border-bottom: var(--arrow-size) solid #f8f9f9; /* points upward */
   transition: left 0.3s ease-in-out;
 }
