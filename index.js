@@ -1,43 +1,29 @@
-const states = ['Morning','Noon','Evening','Night','Midnight'];
+const states = [
+  { label: '🌅 Morning', emoji: '🌅' },
+  { label: '☀️ Noon', emoji: '☀️' },
+  { label: '🌇 Evening', emoji: '🌇' },
+  { label: '🌃 Night', emoji: '🌃' },
+  { label: '🌙 Midnight', emoji: '🌙' }
+];
 let idx = 0;
-let dayCount = 1;
-let date = { day:1, month:1, year:1 };
+let day = 1;
+let date = { d: 1, m: 1, y: 1 };
 const intervalMs = 5 * 60 * 1000;
 
-// Build widget UI
-const clockEl = document.createElement('div');
-clockEl.id = 'calendar-clock';
-clockEl.innerHTML = `
-  <h2 id="time-label">${states[idx]}</h2>
-  <p id="date-label">Day ${dayCount}, ${date.month}/${date.day}/${date.year}</p>
+const widget = document.createElement('div');
+widget.id = 'calendar-clock';
+widget.innerHTML = `
+  <div id="time-icon">${states[idx].emoji}</div>
+  <div id="time-label">${states[idx].label}</div>
+  <div id="date-label">Day ${day}, ${date.m}/${date.d}/${date.y}</div>
   <div class="clock-buttons">
-    ${states.map((s,i)=>`<button data-i="${i}">${s}</button>`).join('')}
+    ${states.map((s,i)=>`<button data-i="${i}">${s.emoji}</button>`).join('')}
   </div>
 `;
-document.body.appendChild(clockEl);
+document.body.appendChild(widget);
+makeDraggable(widget);
 
-// Enable dragging
-makeDraggable(clockEl);
-
-function makeDraggable(elm) {
-  elm.style.position = 'fixed';
-  elm.onmousedown = dragMouseDown;
-  function dragMouseDown(e) {
-    e.preventDefault();
-    let startX = e.clientX, startY = e.clientY;
-    const origTop = elm.offsetTop, origLeft = elm.offsetLeft;
-    document.onmouseup = () => document.onmousemove = null;
-    document.onmousemove = (ev) => {
-      ev.preventDefault();
-      const dx = ev.clientX - startX, dy = ev.clientY - startY;
-      elm.style.top = `${origTop + dy}px`;
-      elm.style.left = `${origLeft + dx}px`;
-    };
-  }
-}
-
-// Button override logic
-clockEl.querySelectorAll('button').forEach(btn => {
+widget.querySelectorAll('button').forEach(btn => {
   btn.onclick = () => {
     const prev = idx;
     idx = parseInt(btn.dataset.i);
@@ -47,40 +33,48 @@ clockEl.querySelectorAll('button').forEach(btn => {
 });
 
 function incrementDate() {
-  dayCount++;
-  date.day++;
-  if (date.day > 30) {
-    date.day = 1;
-    date.month++;
-    if (date.month > 12) {
-      date.month = 1;
-      date.year++;
-    }
+  day++; date.d++;
+  if (date.d > 30) {
+    date.d = 1; date.m++;
+    if (date.m > 12) { date.m = 1; date.y++; }
   }
 }
 
 function updateWidget() {
-  document.getElementById('time-label').textContent = states[idx];
-  document.getElementById('date-label').textContent =
-    `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
+  document.getElementById('time-icon').textContent = states[idx].emoji;
+  document.getElementById('time-label').textContent = states[idx].label;
+  document.getElementById('date-label').textContent = `Day ${day}, ${date.m}/${date.d}/${date.y}`;
 }
 
-// Auto-cycle timer
 setInterval(() => {
   const prev = idx;
   idx = (idx + 1) % states.length;
-  if (prev === states.length -1 && idx === 0) incrementDate();
+  if (prev === states.length - 1 && idx === 0) incrementDate();
   updateWidget();
 }, intervalMs);
 
-// Prompt interceptor
 globalThis.injectTimeOfDay = async function(chat) {
-  const label = states[idx];
-  const sys = {
+  const label = states[idx].label.replace(/ .+$/,''), // strip emoji if needed
+        prompt = `[Time: ${label}, Day ${day}, Date ${date.m}/${date.d}/${date.y}]`;
+  chat.unshift({
     is_user: false,
-    name: "TimeOfDay",
+    name: 'TimeOfDay',
     send_date: Date.now(),
-    mes: `[Time: ${label}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
-  };
-  chat.unshift(sys);
+    mes: prompt
+  });
 };
+
+function makeDraggable(elm) {
+  elm.style.position = 'fixed';
+  elm.onmousedown = e => {
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY;
+    const ox = elm.offsetLeft, oy = elm.offsetTop;
+    document.onmousemove = ev => {
+      ev.preventDefault();
+      elm.style.left = ox + (ev.clientX - sx) + 'px';
+      elm.style.top = oy + (ev.clientY - sy) + 'px';
+    };
+    document.onmouseup = () => document.onmousemove = null;
+  };
+}
