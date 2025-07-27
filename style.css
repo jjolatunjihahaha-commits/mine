@@ -28,23 +28,47 @@
   z-index: 9999;
 }
 
+#calendar-clock-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 #time-label {
   font-size: var(--font-title);
   font-weight: 600;
   color: #f8f9f9;
   text-align: center;
+  flex-grow: 1;
+}
+
+#edit-date-btn {
+  background: none;
+  border: none;
+  color: #f8f9f9;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#edit-date-btn:hover {
+  color: #cccccc;
+}
+
+#calendar-details {
+  text-align: center;
 }
 
 #day-label {
-  font-size: var(--font-body);
-  font-weight: 500;
-  color: #b0b3b7;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
   margin: 0;
 }
 
 #date-label {
-  font-size: calc(var(--font-body) - 0.1rem);
-  color: #8f9194;
+  font-size: 0.8rem;
+  color: #bfbfbf;
   margin: 0;
 }
 
@@ -97,17 +121,4 @@
   border-right: var(--arrow-size) solid transparent;
   border-top: var(--arrow-size) solid #f8f9f9;
   transition: left 0.3s ease-in-out;
-}
-
-#edit-date-btn {
-  background: #3b3f4a;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  color: #f8f9f9;
-}
-#edit-date-btn:hover {
-  background: #505467;
 }
