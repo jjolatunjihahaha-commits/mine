@@ -9,8 +9,8 @@ let idx = 0,
     date = { day:1, month:1, year:1 };
 
 const intervalMs = 5 * 60 * 1000;
-let autoCycle = true;
 
+// Load saved state
 function loadState() {
   const saved = JSON.parse(localStorage.getItem('clockState'));
   if (saved) {
@@ -39,12 +39,12 @@ clock.innerHTML = `
     <div id="progress-bar"><div id="progress-pointer"></div></div>
     <button class="nav-arrow" id="next-btn" title="Next time">&#8250;</button>
   </div>
-  <button id="pause-btn" title="Pause/resume auto-cycle">⏸️</button>
+  <button id="edit-date-btn" title="Edit date">🖊️ Edit</button>
 `;
 document.body.appendChild(clock);
 makeDraggable(clock);
 
-// Draggable
+// Make draggable
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
@@ -59,7 +59,7 @@ function makeDraggable(elm) {
   };
 }
 
-// Navigation
+// Manual navigation
 document.getElementById('prev-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx - 1 + states.length) % states.length;
@@ -72,9 +72,24 @@ document.getElementById('next-btn').onclick = () => {
   if (prevIdx === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 };
-document.getElementById('pause-btn').onclick = () => {
-  autoCycle = !autoCycle;
-  document.getElementById('pause-btn').textContent = autoCycle ? '⏸️' : '▶️';
+
+document.getElementById('edit-date-btn').onclick = () => {
+  const input = prompt("Enter new date (MM/DD/YYYY):", `${date.month}/${date.day}/${date.year}`);
+  if (!input) return;
+  const parts = input.split('/').map(Number);
+  if (parts.length === 3 && parts.every(n => !isNaN(n))) {
+    const [mm, dd, yyyy] = parts;
+    const maxDay = getDaysInMonth(mm, yyyy);
+    if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= maxDay && yyyy >= 1) {
+      date = { month: mm, day: dd, year: yyyy };
+      dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approximate day count
+      updateClock();
+    } else {
+      alert("Invalid date. Please try again.");
+    }
+  } else {
+    alert("Invalid format. Use MM/DD/YYYY.");
+  }
 };
 
 function incrementDay() {
@@ -106,9 +121,8 @@ function updateClock() {
   saveState();
 }
 
-// Auto-cycle
+// Auto-cycle every 5 minutes
 setInterval(() => {
-  if (!autoCycle) return;
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
   if (prevIdx === states.length - 1 && idx === 0) incrementDay();
@@ -125,6 +139,6 @@ globalThis.injectTimeOfDay = async function(chat) {
   });
 };
 
-// Init
+// Initialize
 loadState();
 updateClock();
