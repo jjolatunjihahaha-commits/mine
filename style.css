@@ -77,11 +77,10 @@
   border-radius: 6px;
   background: linear-gradient(
     to right,
-    orange 0%, orange 20%,
-    yellow 20%, yellow 40%,
-    pink 40%, pink 60%,
-    lightblue 60%, lightblue 80%,
-    darkblue 80%, darkblue 100%
+    #F6C270 0%, #F6C270 25%,        /* Morning: peachy-orange */
+    #87CEEB 25%, #87CEEB 50%,       /* Noon: sky blue */
+    #FF8FAB 50%, #FF8FAB 75%,       /* Evening: rose-pink */
+    #2C3E50 75%, #2C3E50 100%       /* Night: deep navy */
   );
   position: relative;
   overflow: visible;
@@ -94,8 +93,4 @@
   height: 0;
   left: 0%;
   transform: translateX(-50%);
-  border-left: var(--arrow-size) solid transparent;
-  border-right: var(--arrow-size) solid transparent;
-  border-bottom: var(--arrow-size) solid #f8f9f9; /* points upward */
-  transition: left 0.3s ease-in-out;
-}
+  border-left: var(--arrow-size)
