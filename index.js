@@ -3,7 +3,7 @@ const states = [
   { emoji: '☀️', name: 'Noon' },
   { emoji: '🌇', name: 'Evening' },
   { emoji: '🌃', name: 'Night' },
-  { emoji: '🌌', name: 'Midnight' }
+  { emoji: '🌌', name: 'Midnight' },
 ];
 let idx = 0, dayCount = 1;
 let date = { day:1, month:1, year:1 };
@@ -42,29 +42,32 @@ clock.querySelectorAll('button').forEach(btn => {
   btn.onclick = () => {
     const prev = idx;
     idx = +btn.dataset.i;
-    if (prev === states.length -1 && idx === 0) incrementDay();
+    if (prev === states.length - 1 && idx === 0) incrementDay();
     updateClock();
   };
 });
 
-function incrementDay(){
+function incrementDay() {
   dayCount++; date.day++;
-  if (date.day > 30) { date.day = 1; date.month++; if (date.month>12){date.month=1; date.year++;} }
+  if (date.day > 30) {
+    date.day = 1; date.month++;
+    if (date.month > 12) { date.month=1; date.year++; }
+  }
 }
 
-function updateClock(){
+function updateClock() {
   document.getElementById('time-emoji').textContent = states[idx].emoji;
   document.getElementById('date-label').textContent =
     `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
   const deg = idx * (360 / states.length);
   document.getElementById('indicator').style.transform = `rotate(${deg}deg)`;
-  clock.querySelectorAll('button').forEach((b,i)=>b.disabled = (i===idx));
+  clock.querySelectorAll('button').forEach((b,i)=> b.disabled = (i===idx));
 }
 
-setInterval(()=>{
+setInterval(() => {
   const prev = idx;
   idx = (idx + 1) % states.length;
-  if (prev === states.length -1 && idx === 0) incrementDay();
+  if (prev === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 }, intervalMs);
 
