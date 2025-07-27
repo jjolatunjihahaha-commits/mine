@@ -1,6 +1,9 @@
 {
-  "display_name": "Time‑Cycle Calendar Clock",
+  "display_name": "Time‑Cycle Clock with Visual Widget & Prompt Injection",
   "loading_order": 10,
+  "author": "YourName",
+  "version": "1.0.0",
   "js": "index.js",
-  "css": "style.css"
+  "css": "style.css",
+  "generate_interceptor": "injectTimeOfDay"
 }
