@@ -1,106 +1,61 @@
-// index.js
-(function(){
-  const states = ['Morning','Noon','Evening','Night'];
-  let idx = 0;
-  let day = 1, month = 1, year = 1;
-  const intervalMs = 5 * 60 * 1000; // configurable
+let timeStates = ['Morning', 'Noon', 'Evening', 'Night'];
+let currentStateIndex = 0;
+let dayCount = 1;
+let currentDate = new Date(1, 0, 1); // 1 Jan 0001
 
-  // Create container
-  const el = document.createElement('div');
-  el.id = 'calendar-clock';
-  el.style.position = 'fixed';
-  el.style.cursor = 'move';
+const clockEl = document.createElement('div');
+clockEl.id = 'calendar-clock';
 
-  // State display
-  const stateSpan = document.createElement('span');
-  stateSpan.id = 'time-state';
-  el.appendChild(stateSpan);
+const timeTitle = document.createElement('h2');
+const dateLabel = document.createElement('p');
+const btnContainer = document.createElement('div');
+btnContainer.classList.add('clock-buttons');
 
-  // Date display
-  const dateSpan = document.createElement('span');
-  dateSpan.id = 'date-display';
-  dateSpan.style.display = 'block';
-  el.appendChild(dateSpan);
+let buttons = [];
 
-  // Manual buttons
-  const btnContainer = document.createElement('div');
-  btnContainer.id = 'button-container';
-  states.forEach((label, i) => {
-    const btn = document.createElement('button');
-    btn.innerText = label;
-    btn.onclick = () => {
-      const prev = idx;
-      idx = i;
-      if (prev === states.length - 1 && idx === 0) incrementDate();
-      update();
-    };
-    btnContainer.appendChild(btn);
+timeStates.forEach((state, index) => {
+  const btn = document.createElement('button');
+  btn.textContent = state;
+  btn.onclick = () => {
+    currentStateIndex = index;
+    updateClockDisplay();
+  };
+  buttons.push(btn);
+  btnContainer.appendChild(btn);
+});
+
+clockEl.appendChild(timeTitle);
+clockEl.appendChild(dateLabel);
+clockEl.appendChild(btnContainer);
+document.body.appendChild(clockEl);
+
+function updateClockDisplay() {
+  const currentTime = timeStates[currentStateIndex];
+  timeTitle.textContent = currentTime;
+  dateLabel.textContent = `Day ${dayCount}, ${currentDate.getDate()}/${currentDate.getMonth() + 1}`;
+  buttons.forEach((btn, idx) => {
+    btn.disabled = idx === currentStateIndex;
   });
-  el.appendChild(btnContainer);
 
-  document.body.appendChild(el);
+  // Optional: send system prompt to character
+  const prompt = `[SYSTEM TIME: ${currentTime}, Day ${dayCount}, ${currentDate.getDate()}/${currentDate.getMonth() + 1}]`;
+  sendSystemPromptToCharacter(prompt);
+}
 
-  // Update visuals & prompt
-  function update() {
-    const label = states[idx];
-    stateSpan.innerText = label;
-    dateSpan.innerText = `Day ${day}, ${month}/${year}`;
-    SillyTavern.app.setSystemPrompt(
-      `Current time: ${label}, Day ${day}, Date ${month}/${year}/${year}.`
-    );
+function advanceTime() {
+  currentStateIndex++;
+  if (currentStateIndex >= timeStates.length) {
+    currentStateIndex = 0;
+    currentDate.setDate(currentDate.getDate() + 1);
+    dayCount++;
   }
+  updateClockDisplay();
+}
 
-  function incrementDate() {
-    day++;
-    if (day > 30) {
-      day = 1;
-      month++;
-      if (month > 12) {
-        month = 1;
-        year++;
-      }
-    }
-  }
+function sendSystemPromptToCharacter(prompt) {
+  // Replace this with SillyTavern's proper system prompt interface
+  console.log(prompt); // For testing
+}
 
-  // Auto-cycle
-  setInterval(() => {
-    const prev = idx;
-    idx = (idx + 1) % states.length;
-    if (prev === states.length - 1 && idx === 0) incrementDate();
-    update();
-  }, intervalMs);
-
-  update();
-
-  // Make draggable
-  makeDraggable(el);
-
-  function makeDraggable(elmnt) {
-    let pos3 = 0, pos4 = 0, pos1 = 0, pos2 = 0;
-    elmnt.onmousedown = dragMouseDown;
-    function dragMouseDown(e) {
-      e.preventDefault();
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDrag;
-      document.onmousemove = elementDrag;
-    }
-    function elementDrag(e) {
-      e.preventDefault();
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      let newTop = elmnt.offsetTop - pos2;
-      let newLeft = elmnt.offsetLeft - pos1;
-      newTop = Math.max(0, Math.min(window.innerHeight - elmnt.clientHeight, newTop));
-      newLeft = Math.max(0, Math.min(window.innerWidth - elmnt.clientWidth, newLeft));
-      elmnt.style.top = newTop + 'px';
-      elmnt.style.left = newLeft + 'px';
-    }
-    function closeDrag() {
-      document.onmouseup = null;
-      document.onmousemove = null;
-    }
-  }
-})();
+updateClockDisplay();
+setInterval(advanceTime, 5 * 60 * 1000); // Every 5 minutes
