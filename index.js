@@ -14,11 +14,13 @@ clock.id = 'calendar-clock';
 clock.innerHTML = `
   <div id="time-label">${states[idx].emoji} ${states[idx].name}</div>
   <div id="date-label">Day ${dayCount}, ${date.month}/${date.day}/${date.year}</div>
-  <div class="clock-buttons">
-    ${states.map((s,i)=>`<button data-i="${i}">${s.emoji} ${s.name}</button>`).join('')}
+  <div id="phase-row">
+    ${states.map(s=>`<span>${s.emoji}</span>`).join('')}
   </div>
-  <div id="progress-bar">
-    <div id="progress-arrow"></div>
+  <div id="bar-container">
+    <button class="nav-arrow" id="prev-btn">&#8249;</button>
+    <div id="progress-bar"><div id="progress-pointer"></div></div>
+    <button class="nav-arrow" id="next-btn">&#8250;</button>
   </div>
 `;
 document.body.appendChild(clock);
@@ -38,33 +40,48 @@ function makeDraggable(elm) {
   };
 }
 
-clock.querySelectorAll('button').forEach(btn => {
-  btn.onclick = () => {
-    const prev = idx;
-    idx = +btn.dataset.i;
-    if(prev === states.length - 1 && idx === 0) incrementDay();
-    updateClock();
-  };
-});
+// Manual nav
+document.getElementById('prev-btn').onclick = () => {
+  const prev = idx;
+  idx = (idx - 1 + states.length) % states.length;
+  if(prev === 0 && idx === states.length - 1) decrementDay();
+  updateClock();
+};
+document.getElementById('next-btn').onclick = () => {
+  const prev = idx;
+  idx = (idx + 1) % states.length;
+  if(prev === states.length - 1 && idx === 0) incrementDay();
+  updateClock();
+};
 
 function incrementDay(){
   dayCount++;
   date.day++;
-  if(date.day > 30){ date.day=1; date.month++; if(date.month>12){ date.month=1; date.year++; } }
+  if (date.day > 30) {
+    date.day = 1;
+    date.month++;
+    if (date.month > 12) date.month = 1, date.year++;
+  }
+}
+function decrementDay(){
+  dayCount = Math.max(1, dayCount-1);
+  date.day = Math.max(1, date.day-1);
 }
 
+// Core update
 function updateClock(){
-  document.getElementById('time-label').textContent = `${states[idx].emoji} ${states[idx].name}`;
-  document.getElementById('date-label').textContent = `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
-  clock.querySelectorAll('button').forEach((b,i)=> b.disabled = (i === idx));
+  document.getElementById('time-label').textContent =
+    `${states[idx].emoji} ${states[idx].name}`;
+  document.getElementById('date-label').textContent =
+    `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
 
-  // Move arrow
-  const bar = document.getElementById('progress-bar');
-  const arrow = document.getElementById('progress-arrow');
+  // Arrow under bar
+  const pointer = document.getElementById('progress-pointer');
   const pos = ((idx + 0.5) / states.length) * 100;
-  arrow.style.left = `${pos}%`;
+  pointer.style.left = `${pos}%`;
 }
 
+// Auto-cycle
 setInterval(()=>{
   const prev = idx;
   idx = (idx + 1) % states.length;
@@ -72,12 +89,13 @@ setInterval(()=>{
   updateClock();
 }, intervalMs);
 
+// Prompt injection
 globalThis.injectTimeOfDay = async function(chat) {
   chat.unshift({
-    is_user:false,
-    name:"TimeOfDay",
-    send_date:Date.now(),
-    mes:`[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
+    is_user: false,
+    name: "TimeOfDay",
+    send_date: Date.now(),
+    mes: `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
   });
 };
 
