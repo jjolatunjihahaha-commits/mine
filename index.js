@@ -7,8 +7,8 @@ const states = [
 ];
 let idx = 0,
     dayCount = 1,
-    date = { day:1, month:1, year:1 },
-    intervalMs = 5 * 60 * 1000;
+    date = { day:1, month:1, year:1 };
+const intervalMs = 5 * 60 * 1000;
 
 // Build widget
 const clock = document.createElement('div');
@@ -17,21 +17,18 @@ clock.innerHTML = `
   <div id="time-label">
     ${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}
   </div>
-  <div id="date-label">
-    Day ${dayCount}, ${date.month}/${date.day}/${date.year}
-  </div>
+  <p id="day-label">Day ${dayCount}</p>
+  <p id="date-label">${date.month}/${date.day}/${date.year}</p>
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn">&#8249;</button>
-    <div id="progress-bar">
-      <div id="progress-pointer"></div>
-    </div>
+    <div id="progress-bar"><div id="progress-pointer"></div></div>
     <button class="nav-arrow" id="next-btn">&#8250;</button>
   </div>
 `;
 document.body.appendChild(clock);
 makeDraggable(clock);
 
-// Draggable
+// Make draggable
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
@@ -66,7 +63,10 @@ function incrementDay() {
   if (date.day > 30) {
     date.day = 1;
     date.month++;
-    if (date.month > 12) date.month = 1, date.year++;
+    if (date.month > 12) {
+      date.month = 1;
+      date.year++;
+    }
   }
 }
 function decrementDay() {
@@ -74,19 +74,20 @@ function decrementDay() {
   date.day = Math.max(1, date.day - 1);
 }
 
-// Update display
+// Update display & pointer
 function updateClock() {
   document.getElementById('time-label').textContent =
     `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
+  document.getElementById('day-label').textContent = `Day ${dayCount}`;
   document.getElementById('date-label').textContent =
-    `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
+    `${date.month}/${date.day}/${date.year}`;
 
   const pointer = document.getElementById('progress-pointer');
   const percent = ((idx + 0.5) / states.length) * 100;
   pointer.style.left = `${percent}%`;
 }
 
-// Auto-cycle
+// Auto-cycle every 5 minutes
 setInterval(() => {
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
@@ -104,5 +105,5 @@ globalThis.injectTimeOfDay = async function(chat) {
   });
 };
 
-// Initial draw
+// Initial render
 updateClock();
