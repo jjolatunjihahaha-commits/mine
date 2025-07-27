@@ -1,44 +1,43 @@
-const states = [
-  { emoji:'🌅', name:'Morning' },
-  { emoji:'☀️', name:'Noon' },
-  { emoji:'🌇', name:'Evening' },
-  { emoji:'🌃', name:'Night' }
-];
-let idx = 0,
-    dayCount = 1,
-    date = { day:1, month:1, year:2025 };
+/* ──────────────────────────────────────────
+   Time‑Cycle Gradient Clock – core logic
+────────────────────────────────────────── */
 
+const states = [
+  { emoji: '🌅', name: 'Morning' },
+  { emoji: '☀️', name: 'Noon' },
+  { emoji: '🌇', name: 'Evening' },
+  { emoji: '🌃', name: 'Night' }
+];
+
+let idx       = 0;
+let dayCount  = 1;
+let date      = { day: 1, month: 1, year: 1 };
 const intervalMs = 5 * 60 * 1000;
 
-// Load saved state
+/* ── persistence ── */
 function loadState() {
   const saved = JSON.parse(localStorage.getItem('clockState'));
   if (saved) {
-    idx = saved.idx;
-    dayCount = saved.dayCount;
-    date = saved.date;
+    idx       = saved.idx;
+    dayCount  = saved.dayCount;
+    date      = saved.date;
   }
 }
 function saveState() {
   localStorage.setItem('clockState', JSON.stringify({ idx, dayCount, date }));
 }
 
-function getDaysInMonth(month, year) {
-  return new Date(year, month, 0).getDate();
-}
+/* ── date helpers ── */
+const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
 
-// Build widget
+/* ── widget build ── */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
-  <div id="calendar-clock-header">
-    <div id="time-label"></div>
-    <button id="edit-date-btn" title="Edit date">🖊️</button>
-  </div>
-  <div id="calendar-details">
-    <p id="day-label"></p>
-    <p id="date-label"></p>
-  </div>
+  <button id="edit-date-btn" title="Edit date">🖊️</button>
+  <div id="time-label"></div>
+  <p id="day-label"></p>
+  <p id="date-label"></p>
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
@@ -46,24 +45,22 @@ clock.innerHTML = `
   </div>
 `;
 document.body.appendChild(clock);
-makeDraggable(clock);
 
-// Make draggable
-function makeDraggable(elm) {
-  elm.onmousedown = e => {
-    e.preventDefault();
-    const start = { x:e.clientX, y:e.clientY };
-    const orig = { left:elm.offsetLeft, top:elm.offsetTop };
-    document.onmouseup = () => document.onmousemove = null;
-    document.onmousemove = ev => {
-      ev.preventDefault();
-      elm.style.left = `${orig.left + ev.clientX - start.x}px`;
-      elm.style.top = `${orig.top + ev.clientY - start.y}px`;
-    };
+/* ── draggable ── */
+clock.onmousedown = e => {
+  if (e.target.id === 'edit-date-btn') return;   // don't drag from edit button
+  e.preventDefault();
+  const start = { x: e.clientX, y: e.clientY };
+  const orig  = { left: clock.offsetLeft, top: clock.offsetTop };
+  document.onmouseup   = () => document.onmousemove = null;
+  document.onmousemove = ev => {
+    ev.preventDefault();
+    clock.style.left = `${orig.left + ev.clientX - start.x}px`;
+    clock.style.top  = `${orig.top  + ev.clientY - start.y}px`;
   };
-}
+};
 
-// Manual navigation
+/* ── navigation ── */
 document.getElementById('prev-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx - 1 + states.length) % states.length;
@@ -77,25 +74,31 @@ document.getElementById('next-btn').onclick = () => {
   updateClock();
 };
 
+/* ── manual date editor ── */
 document.getElementById('edit-date-btn').onclick = () => {
-  const input = prompt("Enter new date (MM/DD/YYYY):", `${date.month}/${date.day}/${date.year}`);
+  const input = prompt(
+    'Enter new date (MM/DD/YYYY):',
+    `${date.month}/${date.day}/${date.year}`
+  );
   if (!input) return;
+
   const parts = input.split('/').map(Number);
-  if (parts.length === 3 && parts.every(n => !isNaN(n))) {
-    const [mm, dd, yyyy] = parts;
-    const maxDay = getDaysInMonth(mm, yyyy);
-    if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= maxDay && yyyy >= 1) {
-      date = { month: mm, day: dd, year: yyyy };
-      dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approximate
-      updateClock();
-    } else {
-      alert("Invalid date. Please try again.");
-    }
-  } else {
-    alert("Invalid format. Use MM/DD/YYYY.");
+  if (parts.length !== 3 || parts.some(isNaN)) {
+    alert('Invalid format. Use MM/DD/YYYY.');
+    return;
   }
+  const [mm, dd, yyyy] = parts;
+  const maxDay = getDaysInMonth(mm, yyyy);
+  if (mm < 1 || mm > 12 || dd < 1 || dd > maxDay || yyyy < 1) {
+    alert('Invalid date. Please try again.');
+    return;
+  }
+  date = { month: mm, day: dd, year: yyyy };
+  dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd;   // rough tally
+  updateClock();
 };
 
+/* ── day increment helpers ── */
 function incrementDay() {
   dayCount++;
   date.day++;
@@ -110,22 +113,25 @@ function incrementDay() {
 }
 function decrementDay() {
   dayCount = Math.max(1, dayCount - 1);
-  date.day = Math.max(1, date.day - 1);
+  date.day  = Math.max(1, date.day  - 1);
 }
 
+/* ── render ── */
 function updateClock() {
   document.getElementById('time-label').textContent =
     `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
-  document.getElementById('day-label').textContent = `Day ${dayCount}`;
+
+  document.getElementById('day-label').textContent  = `Day ${dayCount}`;
   document.getElementById('date-label').textContent =
     `${date.month}/${date.day}/${date.year}`;
-  const pointer = document.getElementById('progress-pointer');
-  const percent = ((idx + 0.5) / states.length) * 100;
-  pointer.style.left = `${percent}%`;
+
+  const pct = ((idx + 0.5) / states.length) * 100;
+  document.getElementById('progress-pointer').style.left = `${pct}%`;
+
   saveState();
 }
 
-// Auto-cycle every 5 minutes
+/* ── auto‑cycle ── */
 setInterval(() => {
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
@@ -133,16 +139,16 @@ setInterval(() => {
   updateClock();
 }, intervalMs);
 
-// Prompt injection
-globalThis.injectTimeOfDay = async function(chat) {
+/* ── inject timestamp into chat ── */
+globalThis.injectTimeOfDay = async chat => {
   chat.unshift({
-    is_user: false,
-    name: "TimeOfDay",
+    is_user  : false,
+    name     : 'TimeOfDay',
     send_date: Date.now(),
-    mes: `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
+    mes      : `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
   });
 };
 
-// Initialize
+/* ── init ── */
 loadState();
 updateClock();
