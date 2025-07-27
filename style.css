@@ -2,70 +2,95 @@
   --gap: 8px;
   --padding: 8px;
   --radius: 12px;
-  --font-body: 0.875rem; /* ≈14px */
-  --font-title: 1.125rem; /* ≈18px */
+  --font-body: 0.875rem;
+  --font-title: 1.125rem;
+  --accent: #5ac8fa;
 }
 
 #calendar-clock {
   position: fixed;
   top: var(--gap);
   left: var(--gap);
-  background: #272b33;
-  padding: calc(var(--padding)*2);
-  width: 160px;
+  background: #292d35;
+  padding: calc(var(--padding)*1.5);
+  width: 180px;
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  color: #e1e3e6;
   font-family: 'Inter', sans-serif;
-  user-select: none;
-  cursor: move;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--gap);
+  user-select: none;
+  cursor: move;
   z-index: 9999;
 }
 
 #time-label {
   font-size: var(--font-title);
   font-weight: 600;
-  color: #f5f6f7;
+  color: #f8f9f9;
   text-align: center;
 }
 
 #date-label {
   font-size: var(--font-body);
-  color: #b0b3b8;
+  color: #b0b3b7;
 }
 
 .clock-buttons {
   display: flex;
-  gap: var(--gap);
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  gap: calc(var(--gap)/2);
+}
+
+.clock-button-row {
+  display: flex;
+  justify-content: space-between;
 }
 
 .clock-buttons button {
-  width: 32px;
+  flex: 1;
   height: 32px;
-  background: #3a3e4a;
+  margin: 0 var(--gap)/2;
+  background: #3d4150;
   border: none;
-  border-radius: 50%;
-  color: #f5f6f7;
-  font-size: 16px;
+  border-radius: 6px;
+  color: #f8f9f9;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   transition: background 0.2s, transform 0.1s;
   cursor: pointer;
 }
 
 .clock-buttons button:hover {
-  background: #4f5362;
+  background: #515367;
   transform: translateY(-2px);
 }
 
 .clock-buttons button:disabled {
-  background: #2f3138;
+  background: #2d3038;
   color: #777;
   cursor: default;
+}
+
+#progress-bar {
+  margin-top: var(--gap);
+  width: 100%;
+  height: 6px;
+  background: #3e414c;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#progress-bar div {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.4s ease;
 }
