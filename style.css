@@ -2,69 +2,69 @@
   position: fixed;
   top: 16px;
   left: 16px;
-  width: 140px;
-  height: 140px;
-  background: rgba(32, 32, 44, 0.9);
+  width: 120px;
+  height: 120px;
+  background: rgba(33, 33, 46, 0.9);
   border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px);
   user-select: none;
   cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
 }
 
 .clock-face {
   position: relative;
-  width: 110px;
-  height: 110px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: conic-gradient(
-    #ffe0b3 0deg 72deg,     /* Morning */
-    #fff9c4 72deg 144deg,   /* Noon */
-    #ffccdc 144deg 216deg,  /* Evening */
-    #c3d9f4 216deg 288deg,  /* Night */
-    #a2a5b0 288deg 360deg    /* Midnight */
+    #ffe0b3 0deg 72deg,   /* Morning */
+    #fff9c4 72deg 144deg, /* Noon */
+    #ffccdc 144deg 216deg,/* Evening */
+    #c3d9f4 216deg 288deg,/* Night */
+    #a2a5b0 288deg 360deg  /* Midnight */
   );
 }
 
 .indicator {
   position: absolute;
   top: 0; left: 0;
-  width: 110px; height: 110px;
+  width: 100px; height: 100px;
   clip-path: polygon(50% 50%, 100% 0, 100% 100%);
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255,255,255,0.35);
   transform-origin: center;
   transition: transform 0.4s ease;
 }
 
 #time-emoji {
   position: absolute;
-  font-size: 22px;
   top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
+  font-size: 20px;
 }
 
 #date-label {
-  margin-top: 6px;
-  font-size: 13px;
+  position: absolute;
+  bottom: 6px;
+  font-size: 12px;
   color: #e0e0e0;
   pointer-events: none;
 }
 
 .clock-buttons {
-  margin-top: 8px;
+  position: absolute;
+  top: -4px;
   display: flex;
   gap: 4px;
 }
-
 .clock-buttons button {
   width: 26px; height: 26px;
-  background: rgba(80, 80, 96, 0.85);
+  background: rgba(75,75,88,0.8);
   border: none;
   border-radius: 50%;
   color: #fff;
@@ -73,11 +73,11 @@
   transition: background 0.2s, transform 0.1s;
 }
 .clock-buttons button:hover {
-  background: rgba(100, 100, 116, 0.9);
+  background: rgba(95,95,108,0.9);
   transform: translateY(-2px);
 }
 .clock-buttons button:disabled {
-  background: rgba(60, 60, 70, 0.6);
+  background: rgba(55,55,66,0.6);
   color: #777;
   cursor: default;
 }
