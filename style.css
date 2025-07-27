@@ -1,60 +1,71 @@
+:root {
+  --gap: 8px;
+  --padding: 8px;
+  --radius: 12px;
+  --font-body: 0.875rem; /* ≈14px */
+  --font-title: 1.125rem; /* ≈18px */
+}
+
 #calendar-clock {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 150px;
-  background: linear-gradient(145deg, #2b2f3a, #20232c);
-  padding: 12px;
-  border-radius: 14px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
-  color: #e0e3e7;
-  font-family: 'Segoe UI', sans-serif;
+  top: var(--gap);
+  left: var(--gap);
+  background: #272b33;
+  padding: calc(var(--padding)*2);
+  width: 160px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  font-family: 'Inter', sans-serif;
   user-select: none;
   cursor: move;
-  z-index: 9999;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: var(--gap);
+  z-index: 9999;
 }
 
 #time-label {
-  font-size: 24px;
+  font-size: var(--font-title);
   font-weight: 600;
-  color: #f7f9fa;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #f5f6f7;
+  text-align: center;
 }
 
 #date-label {
-  font-size: 12px;
+  font-size: var(--font-body);
   color: #b0b3b8;
 }
 
 .clock-buttons {
-  margin-top: 8px;
   display: flex;
-  gap: 4px;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .clock-buttons button {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   background: #3a3e4a;
   border: none;
   border-radius: 50%;
-  color: #f7f9fa;
+  color: #f5f6f7;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.2s, transform 0.1s;
   cursor: pointer;
 }
+
 .clock-buttons button:hover {
-  background: #50535f;
+  background: #4f5362;
   transform: translateY(-2px);
 }
+
 .clock-buttons button:disabled {
-  background: #2c2f37;
-  color: #555;
+  background: #2f3138;
+  color: #777;
   cursor: default;
 }
