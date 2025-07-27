@@ -14,7 +14,7 @@
   left: var(--gap);
   background: #2e3138;
   padding: var(--padding);
-  width: 240px;
+  width: 220px;
   border-radius: var(--radius);
   box-shadow: 0 6px 18px rgba(0,0,0,0.6);
   color: #e0e2e5;
@@ -77,10 +77,11 @@
   border-radius: 6px;
   background: linear-gradient(
     to right,
-    #F6C270 0%, #F6C270 25%,        /* Morning: peachy-orange */
-    #87CEEB 25%, #87CEEB 50%,       /* Noon: sky blue */
-    #FF8FAB 50%, #FF8FAB 75%,       /* Evening: rose-pink */
-    #2C3E50 75%, #2C3E50 100%       /* Night: deep navy */
+    #FFA726 0%,   /* Morning - Warm Orange */
+    #29B6F6 25%,  /* Noon - Sky Blue */
+    #AB47BC 50%,  /* Evening - Lavender Purple */
+    #3949AB 75%,  /* Night - Deep Indigo */
+    #3949AB 100%
   );
   position: relative;
   overflow: visible;
@@ -93,4 +94,8 @@
   height: 0;
   left: 0%;
   transform: translateX(-50%);
-  border-left: var(--arrow-size)
+  border-left: var(--arrow-size) solid transparent;
+  border-right: var(--arrow-size) solid transparent;
+  border-bottom: var(--arrow-size) solid #f8f9f9;
+  transition: left 0.3s ease-in-out;
+}
