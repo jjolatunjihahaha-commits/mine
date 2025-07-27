@@ -6,17 +6,17 @@ const states = [
 ];
 let idx = 0,
     dayCount = 1,
-    date = { day:1, month:1, year:1 };
-const intervalMs = 5 * 60 * 1000;
+    date = { day:1, month:1, year:1 },
+    intervalMs = 5 * 60 * 1000;
 
 // Build widget
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
   <div id="time-label">
-    ${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}
+    ${states[idx].emoji}&nbsp;${states[idx].name}&nbsp;${states[idx].emoji}
   </div>
-  <p id="day-label">Day ${dayCount}</p>
+  <p id="day-label">Day&nbsp;${dayCount}</p>
   <p id="date-label">${date.month}/${date.day}/${date.year}</p>
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn">&#8249;</button>
@@ -24,10 +24,11 @@ clock.innerHTML = `
     <button class="nav-arrow" id="next-btn">&#8250;</button>
   </div>
 `;
+
 document.body.appendChild(clock);
 makeDraggable(clock);
 
-// Make draggable
+// Draggable
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
@@ -49,6 +50,7 @@ document.getElementById('prev-btn').onclick = () => {
   if (prevIdx === 0 && idx === states.length - 1) decrementDay();
   updateClock();
 };
+
 document.getElementById('next-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
@@ -62,10 +64,7 @@ function incrementDay() {
   if (date.day > 30) {
     date.day = 1;
     date.month++;
-    if (date.month > 12) {
-      date.month = 1;
-      date.year++;
-    }
+    if (date.month > 12) date.month = 1, date.year++;
   }
 }
 function decrementDay() {
@@ -73,13 +72,36 @@ function decrementDay() {
   date.day = Math.max(1, date.day - 1);
 }
 
-// Update display & pointer
+// Update display
 function updateClock() {
   document.getElementById('time-label').textContent =
-    `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
-  document.getElementById('day-label').textContent = `Day ${dayCount}`;
+    `${states[idx].emoji}&nbsp;${states[idx].name}&nbsp;${states[idx].emoji}`;
+  document.getElementById('day-label').textContent = `Day&nbsp;${dayCount}`;
   document.getElementById('date-label').textContent =
     `${date.month}/${date.day}/${date.year}`;
 
   const pointer = document.getElementById('progress-pointer');
-  const percent = ((idx + 0.5) /
+  const percent = ((idx + 0.5) / states.length) * 100;
+  pointer.style.left = `${percent}%`;
+}
+
+// Auto-cycle
+setInterval(() => {
+  const prevIdx = idx;
+  idx = (idx + 1) % states.length;
+  if (prevIdx === states.length - 1 && idx === 0) incrementDay();
+  updateClock();
+}, intervalMs);
+
+// Prompt injection
+globalThis.injectTimeOfDay = async function(chat) {
+  chat.unshift({
+    is_user: false,
+    name: "TimeOfDay",
+    send_date: Date.now(),
+    mes: `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
+  });
+};
+
+// Initial draw
+updateClock();
