@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────
    Time‑Cycle Gradient Clock  v2.7.1
-   • Remembers resized width across sessions
-   • Week starts with Monday (Day 1 = Monday)
+   • Resizable width persists across reloads
+   • Day 1 starts on Monday
 ────────────────────────────────────────── */
 
 const states = [
@@ -14,12 +14,14 @@ const states = [
 /* Monday‑first weekday list */
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let idx = 0, dayCount = 1;
+let idx = 0;                 // current time‑of‑day index
+let dayCount = 1;            // Day 1 = Monday
 let date = { day: 1, month: 1, year: 1 };
+
 let collapsed = false;
-let pos  = { left: 6,  top: 6  };        // default position
-let size = { width: 260 };               // default width
-const intervalMs = 5 * 60 * 1000;
+let pos  = { left: 6, top: 6 };      // default position
+let size = { width: 260 };           // default width
+const intervalMs = 5 * 60 * 1000;    // auto‑advance every 5 min
 
 /* ── persistence ───────────────────────── */
 function loadState() {
@@ -38,29 +40,31 @@ function saveState() {
   );
 }
 
-/* load saved values BEFORE building the widget */
+/* Load saved state BEFORE we build the element */
 loadState();
 
 /* ── helpers ───────────────────────────── */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
-const getWeekday     = () => weekdays[(dayCount - 1) % 7];            // Day 1 → Monday
+const getWeekday     = ()     => weekdays[(dayCount - 1) % 7];
 const summaryText = () =>
-  `${states[idx].emoji} ${states[idx].name} — ${getWeekday()} — D${dayCount} — ${String(date.month).padStart(2, '0')}/${String(date.day).padStart(2, '0')}/${date.year}`;
+  `${states[idx].emoji} ${states[idx].name} — ${getWeekday()} — D${dayCount} — ${String(date.month).padStart(2,'0')}/${String(date.day).padStart(2,'0')}/${date.year}`;
 
 /* ── build widget ──────────────────────── */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
+  <!-- corner buttons -->
   <button id="toggle-btn"     title="Collapse / Expand">▾</button>
   <button id="edit-date-btn"  title="Edit date">🖊️</button>
 
+  <!-- labels -->
   <div id="time-label"></div>
   <p   id="day-label"></p>
   <p   id="weekday-label"></p>
   <p   id="date-label"></p>
-
   <p   id="summary-label"></p>
 
+  <!-- progress bar -->
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
@@ -83,7 +87,7 @@ function applyCollapsedUI() {
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
 }
 
-/* ── drag (move) widget ────────────────── */
+/* ── drag‑move widget ──────────────────── */
 clock.onmousedown = e => {
   if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
@@ -105,7 +109,7 @@ clock.onmousedown = e => {
 /* ── resize handle ─────────────────────── */
 document.getElementById('resize-handle').onmousedown = e => {
   e.preventDefault();
-  e.stopPropagation();
+  e.stopPropagation();                  // stop drag‑move
   const start = { x: e.clientX, width: clock.offsetWidth };
 
   document.onmouseup = () => {
@@ -116,7 +120,7 @@ document.getElementById('resize-handle').onmousedown = e => {
   document.onmousemove = ev => {
     ev.preventDefault();
     let newW = start.width + (ev.clientX - start.x);
-    newW = Math.max(180, Math.min(newW, 600));      // clamp
+    newW = Math.max(180, Math.min(newW, 600));     // clamp
     clock.style.width = `${newW}px`;
   };
 };
@@ -150,7 +154,7 @@ document.getElementById('edit-date-btn').onclick = () => {
   if ([mm, dd, yy].some(isNaN) || mm < 1 || mm > 12 || dd < 1 || dd > getDaysInMonth(mm, yy) || yy < 1)
     return alert('Invalid date.');
   date = { month: mm, day: dd, year: yy };
-  dayCount = ((yy - 1) * 360) + ((mm - 1) * 30) + dd;
+  dayCount = ((yy - 1) * 360) + ((mm - 1) * 30) + dd;   // keep internal counter in sync
   updateClock();
 };
 
@@ -163,11 +167,11 @@ function incrementDay() {
   }
 }
 function decrementDay() {
-  dayCount = Math.max(1, dayCount - 1);
+  dayCount = Math.max(1, --dayCount);
   date.day--;
   if (date.day < 1) {
     date.month--;
-    if (date.month < 1) { date.month = 12; date.year = Math.max(1, date.year - 1); }
+    if (date.month < 1) { date.month = 12; date.year = Math.max(1, --date.year); }
     date.day = getDaysInMonth(date.month, date.year);
   }
 }
@@ -204,6 +208,6 @@ globalThis.injectTimeOfDay = async chat => {
   });
 };
 
-/* ── init ──────────────────────────────── */
+/* ── init ─────────────────────────────── */
 applyCollapsedUI();
 updateClock();
