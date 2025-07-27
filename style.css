@@ -70,19 +70,6 @@
   background: #505467;
 }
 
-#pause-btn {
-  background: #3b3f4a;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #f8f9f9;
-}
-#pause-btn:hover {
-  background: #505467;
-}
-
 #progress-bar {
   flex: 1;
   height: var(--bar-height);
@@ -110,4 +97,17 @@
   border-right: var(--arrow-size) solid transparent;
   border-top: var(--arrow-size) solid #f8f9f9;
   transition: left 0.3s ease-in-out;
+}
+
+#edit-date-btn {
+  background: #3b3f4a;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #f8f9f9;
+}
+#edit-date-btn:hover {
+  background: #505467;
 }
