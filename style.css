@@ -4,6 +4,8 @@
   --radius: 14px;
   --font-body: 0.88rem;
   --font-title: 1.1rem;
+  --bar-height: 12px;
+  --arrow-size: 8px;
 }
 
 #calendar-clock {
@@ -12,7 +14,7 @@
   left: var(--gap);
   background: #2e3138;
   padding: var(--padding);
-  width: 190px;
+  width: 220px;
   border-radius: var(--radius);
   box-shadow: 0 6px 18px rgba(0,0,0,0.6);
   color: #e0e2e5;
@@ -38,69 +40,64 @@
   color: #b0b3b7;
 }
 
-.clock-buttons {
-  width: 100%;
+/* Phase emojis row */
+#phase-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap);
   justify-content: space-between;
+  width: 100%;
+  padding: 0 var(--gap);
+  font-size: 18px;
 }
 
-.clock-buttons button {
-  flex: 1 1 45%;
-  height: 32px;
-  background: #3b3f4a;
-  border: none;
-  border-radius: 6px;
-  color: #f8f9f9;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: background 0.2s, transform 0.1s;
-  cursor: pointer;
-}
-
-.clock-buttons button:hover {
-  background: #505467;
-  transform: translateY(-1px);
-}
-
-.clock-buttons button:disabled {
-  background: #2f3137;
-  color: #777;
-  cursor: default;
-}
-
-/* --- Bottom Bar --- */
-
-#progress-bar {
+/* Gradient bar container */
+#bar-container {
   position: relative;
   width: 100%;
-  height: 12px;
-  margin-top: 8px;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+/* Manual arrows */
+.nav-arrow {
+  width: 20px;
+  height: 20px;
+  background: #3b3f4a;
+  border: none;
+  border-radius: 4px;
+  color: #f8f9f9;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-arrow:hover {
+  background: #505467;
+}
+
+/* The gradient bar */
+#progress-bar {
+  flex: 1;
+  height: var(--bar-height);
+  margin: 0 var(--gap);
+  border-radius: var(--bar-height);
   background: linear-gradient(to right,
-    #FFA726 0%,     /* Orange - Morning */
-    #FFEB3B 20%,    /* Yellow - Noon */
-    #F48FB1 40%,    /* Pink - Evening */
-    #64B5F6 60%,    /* Blue - Night */
-    #303F9F 80%,    /* Dark Blue - Midnight */
-    #1A237E 100%    /* Darkest Blue end */
+    orange 0%, orange 20%,
+    yellow 20%, yellow 40%,
+    pink 40%, pink 60%,
+    lightblue 60%, lightblue 80%,
+    darkblue 80%, darkblue 100%
   );
+  position: relative;
   overflow: visible;
 }
 
-#progress-arrow {
+/* Pointer arrow under bar */
+#progress-pointer {
   position: absolute;
-  top: -8px;
+  top: calc(100% + 2px);
   width: 0;
   height: 0;
-  left: 0%;
-  transform: translateX(-50%);
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 8px solid white;
-  transition: left 0.4s ease-in-out;
+  border-left: var(--arrow-size) solid transparent;
+  border-right: var(--arrow-size) solid transparent;
+  border-top: var(--arrow-size) solid #f8f9f9;
+  transition: left 0.3s ease-in-out;
 }
