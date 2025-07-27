@@ -1,6 +1,6 @@
 {
-  "display_name": "Time Gradient Clock",
-  "version": "1.6.0",
+  "display_name": "Time Gradient Clock v1.7",
+  "version": "1.7.0",
   "author": "YourName",
   "loading_order": 10,
   "js": "index.js",
