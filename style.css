@@ -8,7 +8,7 @@
   --arrow-size: 8px;
 }
 
-/* base card */
+/* base card with slide animation */
 #calendar-clock {
   position: fixed;
   top: var(--gap);
@@ -23,22 +23,21 @@
   cursor: move;
   z-index: 9999;
 
-  /* animation */
   overflow: hidden;
   transition:
     max-height 0.28s ease,
     padding    0.28s ease;
   padding: var(--padding);
-  max-height: 500px;           /* open state */
+  max-height: 500px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--gap);
 }
 
-/* corner buttons */
-#edit-date-btn,
-#toggle-btn {
+/* ── corner buttons ─────────────────────── */
+#toggle-btn,
+#edit-date-btn {
   position: absolute;
   top: 6px;
   background: transparent;
@@ -49,16 +48,21 @@
   opacity: 0.75;
   transition: opacity 0.2s;
 }
-#edit-date-btn:hover,
-#toggle-btn:hover { opacity: 1; }
-#edit-date-btn { right: 8px; }
-#toggle-btn   { right: 32px; }
+#toggle-btn:hover,
+#edit-date-btn:hover { opacity: 1; }
+
+/* new positions */
+#toggle-btn   { left: 8px; }   /* top‑left */
+#edit-date-btn{ right: 8px; }  /* top‑right */
+
+/* hide edit button when collapsed */
+#calendar-clock.collapsed #edit-date-btn { display: none; }
 
 /* main labels */
-#time-label   { font-size: var(--font-title); font-weight: 600; color: #fff; text-align: center; letter-spacing: 0.2px; }
-#day-label    { font-size: var(--font-body);  font-weight: 600; color: #d0d2d6; margin: 0; }
-#date-label   { font-size: calc(var(--font-body) - 0.06rem); font-weight: 500; color: #a5a7ac; margin: 0 0 2px; }
-/* divider under “Day” */
+#time-label { font-size: var(--font-title); font-weight: 600; color: #fff; text-align: center; letter-spacing: 0.2px; }
+#day-label  { font-size: var(--font-body);  font-weight: 600; color: #d0d2d6; margin: 0; }
+#date-label { font-size: calc(var(--font-body) - 0.06rem); font-weight: 500; color: #a5a7ac; margin: 0 0 2px; }
+/* divider */
 #day-label::after {
   content: '';
   display: block;
@@ -68,7 +72,7 @@
   background: linear-gradient(90deg, transparent, #4d515b 40%, #4d515b 60%, transparent);
 }
 
-/* summary line (only collapsed) */
+/* summary line (collapsed view) */
 #summary-label {
   display: none;
   font-size: var(--font-body);
@@ -109,7 +113,7 @@
   transition: left 0.3s ease-in-out;
 }
 
-/* ───── Collapsed look ───── */
+/* ── collapsed look ─────────────────────── */
 #calendar-clock.collapsed {
   padding: 10px 14px 12px;
   max-height: 64px;
