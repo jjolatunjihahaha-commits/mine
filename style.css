@@ -70,6 +70,19 @@
   background: #505467;
 }
 
+#pause-btn {
+  background: #3b3f4a;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #f8f9f9;
+}
+#pause-btn:hover {
+  background: #505467;
+}
+
 #progress-bar {
   flex: 1;
   height: var(--bar-height);
@@ -77,10 +90,10 @@
   border-radius: 6px;
   background: linear-gradient(
     to right,
-    #F6C270 0%, #F6C270 25%,        /* Morning: peachy-orange */
-    #87CEEB 25%, #87CEEB 50%,       /* Noon: sky blue */
-    #FF8FAB 50%, #FF8FAB 75%,       /* Evening: rose-pink */
-    #2C3E50 75%, #2C3E50 100%       /* Night: deep navy */
+    #F6C270 0%, #F6C270 25%,
+    #87CEEB 25%, #87CEEB 50%,
+    #FF8FAB 50%, #FF8FAB 75%,
+    #2C3E50 75%, #2C3E50 100%
   );
   position: relative;
   overflow: visible;
@@ -95,6 +108,6 @@
   transform: translateX(-50%);
   border-left: var(--arrow-size) solid transparent;
   border-right: var(--arrow-size) solid transparent;
-  border-top: var(--arrow-size) solid #f8f9f9; /* points up */
+  border-top: var(--arrow-size) solid #f8f9f9;
   transition: left 0.3s ease-in-out;
 }
