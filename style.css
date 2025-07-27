@@ -1,8 +1,8 @@
 #calendar-clock {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
-  background: rgba(30, 30, 30, 0.9);
+  top: 16px;
+  left: 16px;
+  background: rgba(30,30,30,0.9);
   color: #EEE;
   padding: 14px;
   border-radius: 10px;
@@ -11,16 +11,18 @@
   z-index: 9999;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  cursor: move;
+  user-select: none;
 }
 
 #calendar-clock h2 {
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
   font-size: 18px;
   font-weight: bold;
 }
 
 #calendar-clock p {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 13px;
   color: #CCC;
 }
