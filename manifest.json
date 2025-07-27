@@ -1,8 +1,8 @@
 {
-  "display_name": "Time‑Cycle Clock with Emojis & Draggable UI",
-  "loading_order": 10,
-  "author": "YourName",
+  "display_name": "Glass Cool Time Clock",
   "version": "1.2.0",
+  "author": "YourName",
+  "loading_order": 10,
   "js": "index.js",
   "css": "style.css",
   "generate_interceptor": "injectTimeOfDay"
