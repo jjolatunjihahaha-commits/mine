@@ -1,6 +1,5 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock – v2.5.0
-   Collapse animation & summary line
+   Time‑Cycle Gradient Clock – v2.5.1
 ────────────────────────────────────────── */
 
 const states = [
@@ -10,33 +9,33 @@ const states = [
   { emoji: '🌃', name: 'Night' }
 ];
 
-let idx        = 0;
-let dayCount   = 1;
-let date       = { day: 1, month: 1, year: 1 };
-let collapsed  = false;
+let idx = 0, dayCount = 1;
+let date = { day: 1, month: 1, year: 1 };
+let collapsed = false;
 const intervalMs = 5 * 60 * 1000;
 
 /* persistence */
 function loadState() {
   const saved = JSON.parse(localStorage.getItem('clockState'));
   if (saved) {
-    idx       = saved.idx        ?? idx;
-    dayCount  = saved.dayCount   ?? dayCount;
-    date      = saved.date       ?? date;
-    collapsed = saved.collapsed  ?? collapsed;
+    idx       = saved.idx       ?? idx;
+    dayCount  = saved.dayCount  ?? dayCount;
+    date      = saved.date      ?? date;
+    collapsed = saved.collapsed ?? collapsed;
   }
 }
 function saveState() {
-  localStorage.setItem(
-    'clockState',
-    JSON.stringify({ idx, dayCount, date, collapsed })
-  );
+  localStorage.setItem('clockState',
+    JSON.stringify({ idx, dayCount, date, collapsed }));
 }
 
-/* date helper */
+/* helpers */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
+function summaryText() {
+  return `${states[idx].emoji} ${states[idx].name} — D${dayCount} — ${String(date.month).padStart(2,'0')}/${String(date.day).padStart(2,'0')}/${date.year}`;
+}
 
-/* widget skeleton */
+/* widget */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
@@ -57,7 +56,7 @@ clock.innerHTML = `
 `;
 document.body.appendChild(clock);
 
-/* apply collapsed UI instantly */
+/* enforce collapsed class visually */
 function applyCollapsedUI() {
   clock.classList.toggle('collapsed', collapsed);
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
@@ -77,7 +76,7 @@ clock.onmousedown = e => {
   };
 };
 
-/* navigation buttons */
+/* navigation */
 document.getElementById('prev-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx - 1 + states.length) % states.length;
@@ -91,7 +90,7 @@ document.getElementById('next-btn').onclick = () => {
   updateClock();
 };
 
-/* collapse/expand */
+/* collapse / expand */
 document.getElementById('toggle-btn').onclick = () => {
   collapsed = !collapsed;
   applyCollapsedUI();
@@ -100,71 +99,44 @@ document.getElementById('toggle-btn').onclick = () => {
 
 /* edit date */
 document.getElementById('edit-date-btn').onclick = () => {
-  const input = prompt(
-    'Enter new date (MM/DD/YYYY):',
-    `${date.month}/${date.day}/${date.year}`
-  );
+  const input = prompt('Enter new date (MM/DD/YYYY):', `${date.month}/${date.day}/${date.year}`);
   if (!input) return;
   const parts = input.split('/').map(Number);
-  if (parts.length !== 3 || parts.some(isNaN)) {
-    alert('Invalid format. Use MM/DD/YYYY.');
-    return;
-  }
+  if (parts.length !== 3 || parts.some(isNaN)) return alert('Invalid format.');
   const [mm, dd, yyyy] = parts;
-  const maxDay = getDaysInMonth(mm, yyyy);
-  if (mm < 1 || mm > 12 || dd < 1 || dd > maxDay || yyyy < 1) {
-    alert('Invalid date. Please try again.');
-    return;
-  }
-  date = { month: mm, day: dd, year: yyyy };
-  dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approx
+  if (mm<1||mm>12||dd<1||dd>getDaysInMonth(mm,yyyy)||yyyy<1) return alert('Invalid date.');
+  date = { month:mm, day:dd, year:yyyy };
+  dayCount = ((yyyy-1)*360) + ((mm-1)*30) + dd;
   updateClock();
 };
 
-/* date arithmetic */
+/* day math */
 function incrementDay() {
-  dayCount++;
-  date.day++;
+  dayCount++; date.day++;
   if (date.day > getDaysInMonth(date.month, date.year)) {
-    date.day = 1;
-    date.month++;
-    if (date.month > 12) {
-      date.month = 1;
-      date.year++;
-    }
+    date.day = 1; date.month++;
+    if (date.month > 12) { date.month = 1; date.year++; }
   }
 }
 function decrementDay() {
-  dayCount  = Math.max(1, dayCount - 1);
-  date.day  = Math.max(1, date.day  - 1);
+  dayCount  = Math.max(1, dayCount-1);
+  date.day  = Math.max(1, date.day-1);
 }
 
-/* produce summary string */
-function summaryText() {
-  return `${states[idx].emoji} ${states[idx].name} — D${dayCount} — ${String(date.month).padStart(2, '0')}/${String(date.day).padStart(2, '0')}/${date.year}`;
-}
-
-/* render everything */
+/* render */
 function updateClock() {
-  /* main labels */
-  document.getElementById('time-label').textContent =
-    `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
+  document.getElementById('time-label').textContent  = `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
+  document.getElementById('day-label').textContent   = `Day ${dayCount}`;
+  document.getElementById('date-label').textContent  = `${date.month}/${date.day}/${date.year}`;
+  document.getElementById('summary-label').textContent = summaryText();          // NEW
 
-  document.getElementById('day-label').textContent  = `Day ${dayCount}`;
-  document.getElementById('date-label').textContent =
-    `${date.month}/${date.day}/${date.year}`;
-
-  /* summary line */
-  document.getElementById('summary-label').textContent = summaryText();
-
-  /* pointer position */
-  const pct = ((idx + 0.5) / states.length) * 100;
+  const pct = ((idx+0.5)/states.length)*100;
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 
   saveState();
 }
 
-/* auto‑cycle every 5 min */
+/* auto‑cycle */
 setInterval(() => {
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
@@ -175,10 +147,10 @@ setInterval(() => {
 /* chat timestamp */
 globalThis.injectTimeOfDay = async chat => {
   chat.unshift({
-    is_user  : false,
-    name     : 'TimeOfDay',
-    send_date: Date.now(),
-    mes      : `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
+    is_user:false,
+    name:'TimeOfDay',
+    send_date:Date.now(),
+    mes:`[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
   });
 };
 
