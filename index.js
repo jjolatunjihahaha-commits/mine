@@ -31,15 +31,19 @@ function getDaysInMonth(month, year) {
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
-  <div id="time-label"></div>
-  <p id="day-label"></p>
-  <p id="date-label"></p>
+  <div id="calendar-clock-header">
+    <div id="time-label"></div>
+    <button id="edit-date-btn" title="Edit date">🖊️</button>
+  </div>
+  <div id="calendar-details">
+    <p id="day-label"></p>
+    <p id="date-label"></p>
+  </div>
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
     <button class="nav-arrow" id="next-btn" title="Next time">&#8250;</button>
   </div>
-  <button id="edit-date-btn" title="Edit date">🖊️ Edit</button>
 `;
 document.body.appendChild(clock);
 makeDraggable(clock);
@@ -82,7 +86,7 @@ document.getElementById('edit-date-btn').onclick = () => {
     const maxDay = getDaysInMonth(mm, yyyy);
     if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= maxDay && yyyy >= 1) {
       date = { month: mm, day: dd, year: yyyy };
-      dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approximate day count
+      dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approximate
       updateClock();
     } else {
       alert("Invalid date. Please try again.");
