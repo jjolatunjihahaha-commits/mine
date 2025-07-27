@@ -1,21 +1,21 @@
 const states = [
-  { emoji:'🌅', name:'Morning' },
-  { emoji:'☀️', name:'Noon' },
-  { emoji:'🌇', name:'Evening' },
-  { emoji:'🌃', name:'Night' },
-  { emoji:'🌌', name:'Midnight' }
+  { name: 'Morning' },
+  { name: 'Noon' },
+  { name: 'Evening' },
+  { name: 'Night' },
+  { name: 'Midnight' }
 ];
 let idx = 0, dayCount = 1;
-let date = { day:1, month:1, year:1 };
+let date = { day: 1, month: 1, year: 1 };
 const intervalMs = 5 * 60 * 1000;
 
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
-  <div id="time-label">${states[idx].emoji} ${states[idx].name}</div>
+  <div id="time-label">${states[idx].name}</div>
   <div id="date-label">Day ${dayCount}, ${date.month}/${date.day}/${date.year}</div>
   <div id="phase-row">
-    ${states.map(s=>`<span>${s.emoji}</span>`).join('')}
+    ${states.map(s => `<span>${s.name}</span>`).join('')}
   </div>
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn">&#8249;</button>
@@ -29,8 +29,8 @@ makeDraggable(clock);
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
-    const start = { x:e.clientX, y:e.clientY };
-    const orig = { left:elm.offsetLeft, top:elm.offsetTop };
+    const start = { x: e.clientX, y: e.clientY };
+    const orig = { left: elm.offsetLeft, top: elm.offsetTop };
     document.onmouseup = () => document.onmousemove = null;
     document.onmousemove = ev => {
       ev.preventDefault();
@@ -40,21 +40,20 @@ function makeDraggable(elm) {
   };
 }
 
-// Manual nav
 document.getElementById('prev-btn').onclick = () => {
   const prev = idx;
   idx = (idx - 1 + states.length) % states.length;
-  if(prev === 0 && idx === states.length - 1) decrementDay();
+  if (prev === 0 && idx === states.length - 1) decrementDay();
   updateClock();
 };
 document.getElementById('next-btn').onclick = () => {
   const prev = idx;
   idx = (idx + 1) % states.length;
-  if(prev === states.length - 1 && idx === 0) incrementDay();
+  if (prev === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 };
 
-function incrementDay(){
+function incrementDay() {
   dayCount++;
   date.day++;
   if (date.day > 30) {
@@ -63,29 +62,24 @@ function incrementDay(){
     if (date.month > 12) date.month = 1, date.year++;
   }
 }
-function decrementDay(){
-  dayCount = Math.max(1, dayCount-1);
-  date.day = Math.max(1, date.day-1);
+function decrementDay() {
+  dayCount = Math.max(1, dayCount - 1);
+  date.day = Math.max(1, date.day - 1);
 }
 
-// Core update
-function updateClock(){
-  document.getElementById('time-label').textContent =
-    `${states[idx].emoji} ${states[idx].name}`;
+function updateClock() {
+  document.getElementById('time-label').textContent = states[idx].name;
   document.getElementById('date-label').textContent =
     `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
-
-  // Arrow under bar
   const pointer = document.getElementById('progress-pointer');
   const pos = ((idx + 0.5) / states.length) * 100;
   pointer.style.left = `${pos}%`;
 }
 
-// Auto-cycle
-setInterval(()=>{
+setInterval(() => {
   const prev = idx;
   idx = (idx + 1) % states.length;
-  if(prev === states.length - 1 && idx === 0) incrementDay();
+  if (prev === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 }, intervalMs);
 
