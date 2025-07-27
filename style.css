@@ -1,6 +1,6 @@
 :root {
   --gap: 6px;
-  --padding: 8px;
+  --padding: 10px;
   --radius: 14px;
   --font-body: 0.88rem;
   --font-title: 1.1rem;
@@ -73,30 +73,34 @@
   cursor: default;
 }
 
+/* --- Bottom Bar --- */
+
 #progress-bar {
   position: relative;
   width: 100%;
-  height: 6px;
-  background: linear-gradient(
-    to right,
-    #FFA500 0%, 20%,   /* Morning: orange */
-    #FFFF00 20%, 40%,  /* Noon: yellow */
-    #FF69B4 40%, 60%,  /* Evening: pink */
-    #87CEEB 60%, 80%,  /* Night: light blue */
-    #1E3A5F 80%, 100%  /* Midnight: dark blue */
+  height: 12px;
+  margin-top: 8px;
+  border-radius: 6px;
+  background: linear-gradient(to right,
+    #FFA726 0%,     /* Orange - Morning */
+    #FFEB3B 20%,    /* Yellow - Noon */
+    #F48FB1 40%,    /* Pink - Evening */
+    #64B5F6 60%,    /* Blue - Night */
+    #303F9F 80%,    /* Dark Blue - Midnight */
+    #1A237E 100%    /* Darkest Blue end */
   );
-  border-radius: 3px;
-  margin-top: var(--gap);
+  overflow: visible;
 }
 
-#progress-bar::after {
-  content: '';
+#progress-arrow {
   position: absolute;
-  top: -4px;
+  top: -8px;
   width: 0;
   height: 0;
+  left: 0%;
+  transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 6px solid #5ac8fa;
-  transition: left 0.3s ease;
+  border-bottom: 8px solid white;
+  transition: left 0.4s ease-in-out;
 }
