@@ -7,27 +7,44 @@ const states = [
 let idx = 0,
     dayCount = 1,
     date = { day:1, month:1, year:1 };
+
 const intervalMs = 5 * 60 * 1000;
+let autoCycle = true;
+
+function loadState() {
+  const saved = JSON.parse(localStorage.getItem('clockState'));
+  if (saved) {
+    idx = saved.idx;
+    dayCount = saved.dayCount;
+    date = saved.date;
+  }
+}
+function saveState() {
+  localStorage.setItem('clockState', JSON.stringify({ idx, dayCount, date }));
+}
+
+function getDaysInMonth(month, year) {
+  return new Date(year, month, 0).getDate();
+}
 
 // Build widget
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
-  <div id="time-label">
-    ${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}
-  </div>
-  <p id="day-label">Day ${dayCount}</p>
-  <p id="date-label">${date.month}/${date.day}/${date.year}</p>
+  <div id="time-label"></div>
+  <p id="day-label"></p>
+  <p id="date-label"></p>
   <div id="bar-container">
-    <button class="nav-arrow" id="prev-btn">&#8249;</button>
+    <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
-    <button class="nav-arrow" id="next-btn">&#8250;</button>
+    <button class="nav-arrow" id="next-btn" title="Next time">&#8250;</button>
   </div>
+  <button id="pause-btn" title="Pause/resume auto-cycle">⏸️</button>
 `;
 document.body.appendChild(clock);
 makeDraggable(clock);
 
-// Make draggable
+// Draggable
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
@@ -42,7 +59,7 @@ function makeDraggable(elm) {
   };
 }
 
-// Manual navigation
+// Navigation
 document.getElementById('prev-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx - 1 + states.length) % states.length;
@@ -55,11 +72,15 @@ document.getElementById('next-btn').onclick = () => {
   if (prevIdx === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 };
+document.getElementById('pause-btn').onclick = () => {
+  autoCycle = !autoCycle;
+  document.getElementById('pause-btn').textContent = autoCycle ? '⏸️' : '▶️';
+};
 
 function incrementDay() {
   dayCount++;
   date.day++;
-  if (date.day > 30) {
+  if (date.day > getDaysInMonth(date.month, date.year)) {
     date.day = 1;
     date.month++;
     if (date.month > 12) {
@@ -73,21 +94,21 @@ function decrementDay() {
   date.day = Math.max(1, date.day - 1);
 }
 
-// Update display & pointer
 function updateClock() {
   document.getElementById('time-label').textContent =
-    `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
-  document.getElementById('day-label').textContent = `Day ${dayCount}`;
+    `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
+  document.getElementById('day-label').textContent = `Day ${dayCount}`;
   document.getElementById('date-label').textContent =
     `${date.month}/${date.day}/${date.year}`;
-
   const pointer = document.getElementById('progress-pointer');
   const percent = ((idx + 0.5) / states.length) * 100;
   pointer.style.left = `${percent}%`;
+  saveState();
 }
 
-// Auto-cycle every 5 minutes
+// Auto-cycle
 setInterval(() => {
+  if (!autoCycle) return;
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
   if (prevIdx === states.length - 1 && idx === 0) incrementDay();
@@ -104,5 +125,6 @@ globalThis.injectTimeOfDay = async function(chat) {
   });
 };
 
-// Initial render
+// Init
+loadState();
 updateClock();
