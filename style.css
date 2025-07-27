@@ -1,53 +1,53 @@
 #calendar-clock {
   position: fixed;
-  top: 16px;
-  left: 16px;
-  background: rgba(30,30,30,0.9);
-  color: #EEE;
-  padding: 14px;
-  border-radius: 10px;
+  top: 16px; left: 16px;
+  background: rgba(40,40,40,0.9);
+  color: #fff;
+  padding: 16px;
+  border-radius: 12px;
   font-family: 'Segoe UI', sans-serif;
-  font-size: 14px;
-  z-index: 9999;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.7);
   cursor: move;
   user-select: none;
+  z-index: 9999;
+  width: 140px;
 }
-
-#calendar-clock h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
+#time-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+#time-label {
+  font-size: 16px;
   font-weight: bold;
+  margin-bottom: 4px;
 }
-
-#calendar-clock p {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: #CCC;
+#date-label {
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 8px;
 }
-
 .clock-buttons {
   display: flex;
-  gap: 6px;
   justify-content: center;
+  gap: 4px;
 }
-
 .clock-buttons button {
-  padding: 5px 10px;
-  font-size: 12px;
-  color: #fff;
-  background: #555;
+  background: #666;
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
   cursor: pointer;
+  color: #fff;
   transition: background 0.2s;
+}
+.clock-buttons button:hover:not(:disabled) {
+  background: #888;
 }
 .clock-buttons button:disabled {
   background: #333;
-  color: #888;
+  color: #777;
   cursor: default;
-}
-.clock-buttons button:not(:disabled):hover {
-  background: #777;
 }
