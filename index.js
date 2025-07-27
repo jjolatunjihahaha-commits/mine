@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v2.7.0
-   • Weekday line  (Sun‑Sat)
-   • Resizable width + persistence
+   Time‑Cycle Gradient Clock  v2.7.1
+   • Remembers resized width across sessions
+   • Week starts with Monday (Day 1 = Monday)
 ────────────────────────────────────────── */
 
 const states = [
@@ -11,13 +11,14 @@ const states = [
   { emoji: '🌃', name: 'Night'   }
 ];
 
-const weekdays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+/* Monday‑first weekday list */
+const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 let idx = 0, dayCount = 1;
 let date = { day: 1, month: 1, year: 1 };
 let collapsed = false;
-let pos   = { left: 6, top: 6 };         // default position
-let size  = { width: 260 };              // default width  (height stays auto)
+let pos  = { left: 6,  top: 6  };        // default position
+let size = { width: 260 };               // default width
 const intervalMs = 5 * 60 * 1000;
 
 /* ── persistence ───────────────────────── */
@@ -32,15 +33,17 @@ function loadState() {
   size       = saved.size       ?? size;
 }
 function saveState() {
-  localStorage.setItem(
-    'clockState',
+  localStorage.setItem('clockState',
     JSON.stringify({ idx, dayCount, date, collapsed, pos, size })
   );
 }
 
+/* load saved values BEFORE building the widget */
+loadState();
+
 /* ── helpers ───────────────────────────── */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
-const getWeekday     = ()     => weekdays[new Date(date.year, date.month - 1, date.day).getDay()];
+const getWeekday     = () => weekdays[(dayCount - 1) % 7];            // Day 1 → Monday
 const summaryText = () =>
   `${states[idx].emoji} ${states[idx].name} — ${getWeekday()} — D${dayCount} — ${String(date.month).padStart(2, '0')}/${String(date.day).padStart(2, '0')}/${date.year}`;
 
@@ -82,7 +85,7 @@ function applyCollapsedUI() {
 
 /* ── drag (move) widget ────────────────── */
 clock.onmousedown = e => {
-  if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return; // ignore buttons/handle
+  if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
   const start = { x: e.clientX, y: e.clientY };
   const orig  = { left: clock.offsetLeft, top: clock.offsetTop };
@@ -102,7 +105,7 @@ clock.onmousedown = e => {
 /* ── resize handle ─────────────────────── */
 document.getElementById('resize-handle').onmousedown = e => {
   e.preventDefault();
-  e.stopPropagation();                     // stop drag‑move
+  e.stopPropagation();
   const start = { x: e.clientX, width: clock.offsetWidth };
 
   document.onmouseup = () => {
@@ -113,7 +116,7 @@ document.getElementById('resize-handle').onmousedown = e => {
   document.onmousemove = ev => {
     ev.preventDefault();
     let newW = start.width + (ev.clientX - start.x);
-    newW = Math.max(180, Math.min(newW, 600));   // clamp
+    newW = Math.max(180, Math.min(newW, 600));      // clamp
     clock.style.width = `${newW}px`;
   };
 };
@@ -202,6 +205,5 @@ globalThis.injectTimeOfDay = async chat => {
 };
 
 /* ── init ──────────────────────────────── */
-loadState();
 applyCollapsedUI();
 updateClock();
