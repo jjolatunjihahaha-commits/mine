@@ -5,29 +5,39 @@ const states = [
   { emoji:'🌃', name:'Night' },
   { emoji:'🌌', name:'Midnight' }
 ];
-let idx = 0, dayCount = 1;
-let date = { day:1, month:1, year:1 };
-const intervalMs = 5 * 60 * 1000;
+let idx = 0,
+    dayCount = 1,
+    date = { day:1, month:1, year:1 },
+    intervalMs = 5 * 60 * 1000;
 
-// Build the widget
+// Build widget
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
-  <div id="time-label">${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}</div>
-  <div id="date-label">Day ${dayCount}, ${date.month}/${date.day}/${date.year}</div>
+  <div id="time-label">
+    ${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}
+  </div>
+  <div id="date-label">
+    Day ${dayCount}, ${date.month}/${date.day}/${date.year}
+  </div>
   <div id="bar-container">
-    <div id="progress-bar"><div id="progress-pointer"></div></div>
+    <button class="nav-arrow" id="prev-btn">&#8249;</button>
+    <div id="progress-bar">
+      <div id="progress-pointer"></div>
+    </div>
+    <button class="nav-arrow" id="next-btn">&#8250;</button>
   </div>
 `;
 document.body.appendChild(clock);
+makeDraggable(clock);
 
-// Make it draggable
+// Draggable
 function makeDraggable(elm) {
   elm.onmousedown = e => {
     e.preventDefault();
-    const start = { x: e.clientX, y: e.clientY };
-    const orig = { left: elm.offsetLeft, top: elm.offsetTop };
-    document.onmouseup = () => (document.onmousemove = null);
+    const start = { x:e.clientX, y:e.clientY };
+    const orig = { left:elm.offsetLeft, top:elm.offsetTop };
+    document.onmouseup = () => document.onmousemove = null;
     document.onmousemove = ev => {
       ev.preventDefault();
       elm.style.left = `${orig.left + ev.clientX - start.x}px`;
@@ -35,23 +45,36 @@ function makeDraggable(elm) {
     };
   };
 }
-makeDraggable(clock);
 
-// Increment date when wrapping past Midnight→Morning
+// Manual navigation
+document.getElementById('prev-btn').onclick = () => {
+  const prevIdx = idx;
+  idx = (idx - 1 + states.length) % states.length;
+  if (prevIdx === 0 && idx === states.length - 1) decrementDay();
+  updateClock();
+};
+document.getElementById('next-btn').onclick = () => {
+  const prevIdx = idx;
+  idx = (idx + 1) % states.length;
+  if (prevIdx === states.length - 1 && idx === 0) incrementDay();
+  updateClock();
+};
+
 function incrementDay() {
   dayCount++;
   date.day++;
   if (date.day > 30) {
     date.day = 1;
     date.month++;
-    if (date.month > 12) {
-      date.month = 1;
-      date.year++;
-    }
+    if (date.month > 12) date.month = 1, date.year++;
   }
 }
+function decrementDay() {
+  dayCount = Math.max(1, dayCount - 1);
+  date.day = Math.max(1, date.day - 1);
+}
 
-// Update display and arrow position
+// Update display
 function updateClock() {
   document.getElementById('time-label').textContent =
     `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
@@ -59,19 +82,19 @@ function updateClock() {
     `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
 
   const pointer = document.getElementById('progress-pointer');
-  const pos = ((idx + 0.5) / states.length) * 100;
-  pointer.style.left = `${pos}%`;
+  const percent = ((idx + 0.5) / states.length) * 100;
+  pointer.style.left = `${percent}%`;
 }
 
-// Auto-cycle every 5 minutes
+// Auto-cycle
 setInterval(() => {
-  const prev = idx;
+  const prevIdx = idx;
   idx = (idx + 1) % states.length;
-  if (prev === states.length - 1 && idx === 0) incrementDay();
+  if (prevIdx === states.length - 1 && idx === 0) incrementDay();
   updateClock();
 }, intervalMs);
 
-// Prompt injection so characters see the time-of-day
+// Prompt injection
 globalThis.injectTimeOfDay = async function(chat) {
   chat.unshift({
     is_user: false,
