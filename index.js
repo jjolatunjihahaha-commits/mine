@@ -2,8 +2,7 @@ const states = [
   { emoji:'🌅', name:'Morning' },
   { emoji:'☀️', name:'Noon' },
   { emoji:'🌇', name:'Evening' },
-  { emoji:'🌃', name:'Night' },
-  { emoji:'🌌', name:'Midnight' }
+  { emoji:'🌃', name:'Night' }
 ];
 let idx = 0,
     dayCount = 1,
@@ -83,27 +82,4 @@ function updateClock() {
     `${date.month}/${date.day}/${date.year}`;
 
   const pointer = document.getElementById('progress-pointer');
-  const percent = ((idx + 0.5) / states.length) * 100;
-  pointer.style.left = `${percent}%`;
-}
-
-// Auto-cycle every 5 minutes
-setInterval(() => {
-  const prevIdx = idx;
-  idx = (idx + 1) % states.length;
-  if (prevIdx === states.length - 1 && idx === 0) incrementDay();
-  updateClock();
-}, intervalMs);
-
-// Prompt injection
-globalThis.injectTimeOfDay = async function(chat) {
-  chat.unshift({
-    is_user: false,
-    name: "TimeOfDay",
-    send_date: Date.now(),
-    mes: `[Time: ${states[idx].name}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
-  });
-};
-
-// Initial render
-updateClock();
+  const percent = ((idx + 0.5) /
