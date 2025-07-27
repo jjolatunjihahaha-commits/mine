@@ -1,93 +1,66 @@
-// File: extensions/time-of-day/index.js
+const states = ['Morning','Noon','Evening','Night'];
+let idx = 0;
+let dayCount = 1;
+let date = { day:1, month:1, year:1 };
+const intervalMs = 5 * 60 * 1000; // 5 minutes
 
-let intervalId = null;
-let currentTimeSlot = "";
-let currentDate = new Date(1, 0, 1); // Start from 01-01-0001
-const timeSlots = ["Morning", "Noon", "Evening", "Night"];
-let slotIndex = 0;
+// Visual widget
+const clockEl = document.createElement('div');
+clockEl.id = 'calendar-clock';
+clockEl.innerHTML = `
+  <h2 id="time-label">${states[idx]}</h2>
+  <p id="date-label">Day ${dayCount}, ${date.month}/${date.day}/${date.year}</p>
+  <div class="clock-buttons">
+    ${states.map((s,i) => `<button data-i="${i}">${s}</button>`).join('')}
+  </div>
+`;
+document.body.appendChild(clockEl);
 
-function formatDate(date) {
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const yyyy = String(date.getFullYear()).padStart(4, '0');
-  return `${dd}-${mm}-${yyyy}`;
-}
+// Manual buttons
+clockEl.querySelectorAll('button').forEach(btn => {
+  btn.onclick = () => {
+    const prev = idx;
+    idx = parseInt(btn.dataset.i);
+    if (prev === states.length - 1 && idx === 0) incrementDate();
+    updateWidget();
+  };
+});
 
-function updateTimeSlot() {
-  slotIndex = (slotIndex + 1) % 4;
-  currentTimeSlot = timeSlots[slotIndex];
-
-  if (currentTimeSlot === "Morning" && slotIndex === 0) {
-    currentDate.setDate(currentDate.getDate() + 1);
+function incrementDate(){
+  dayCount++;
+  date.day++;
+  if(date.day > 30){
+    date.day = 1;
+    date.month++;
+    if(date.month > 12){
+      date.month = 1;
+      date.year++;
+    }
   }
-
-  const formattedDate = formatDate(currentDate);
-  const timeString = `Time: ${currentTimeSlot}, Date: ${formattedDate}`;
-
-  // Send as system prompt to the LLM
-  ST.systemMessage.set(timeString);
-
-  // Update UI
-  const timeDisplay = document.getElementById("time-of-day-display");
-  if (timeDisplay) {
-    timeDisplay.textContent = timeString;
-  }
 }
 
-function createClockUI() {
-  const container = document.createElement("div");
-  container.id = "time-of-day-display";
-  container.style.position = "fixed";
-  container.style.bottom = "10px";
-  container.style.right = "10px";
-  container.style.backgroundColor = "#1e1e2f";
-  container.style.color = "#fff";
-  container.style.padding = "10px 15px";
-  container.style.borderRadius = "12px";
-  container.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.3)";
-  container.style.fontSize = "16px";
-  container.style.zIndex = "9999";
-  container.style.userSelect = "none";
-
-  const buttonContainer = document.createElement("div");
-  buttonContainer.style.marginTop = "8px";
-  buttonContainer.style.display = "flex";
-  buttonContainer.style.gap = "6px";
-  buttonContainer.style.justifyContent = "space-between";
-
-  timeSlots.forEach((slot, i) => {
-    const btn = document.createElement("button");
-    btn.textContent = slot;
-    btn.style.padding = "4px 6px";
-    btn.style.border = "none";
-    btn.style.borderRadius = "6px";
-    btn.style.background = "#333";
-    btn.style.color = "#fff";
-    btn.style.cursor = "pointer";
-    btn.onclick = () => {
-      slotIndex = i - 1; // -1 because updateTimeSlot() increments
-      updateTimeSlot();
-    };
-    buttonContainer.appendChild(btn);
-  });
-
-  container.appendChild(buttonContainer);
-  document.body.appendChild(container);
+function updateWidget(){
+  document.getElementById('time-label').textContent = states[idx];
+  document.getElementById('date-label').textContent =
+    `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
 }
 
-function startClockCycle() {
-  updateTimeSlot();
-  intervalId = setInterval(updateTimeSlot, 5 * 60 * 1000); // 5 minutes
-}
+// Auto-cycle
+setInterval(() => {
+  const prev = idx;
+  idx = (idx + 1) % states.length;
+  if (prev === states.length - 1 && idx === 0) incrementDate();
+  updateWidget();
+}, intervalMs);
 
-function stopClockCycle() {
-  clearInterval(intervalId);
-  intervalId = null;
-}
-
-function init() {
-  createClockUI();
-  startClockCycle();
-}
-
-window.addEventListener("DOMContentLoaded", init);
+// Prompt interceptor
+globalThis.injectTimeOfDay = async function(chat, contextSize, abort, type) {
+  const label = states[idx];
+  const sys = {
+    is_user: false,
+    name: "TimeOfDay",
+    send_date: Date.now(),
+    mes: `[Time: ${label}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
+  };
+  chat.unshift(sys);
+};
