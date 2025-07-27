@@ -1,10 +1,10 @@
-const states = ['Morning','Noon','Evening','Night'];
+const states = ['Morning','Noon','Evening','Night','Midnight'];
 let idx = 0;
 let dayCount = 1;
 let date = { day:1, month:1, year:1 };
 const intervalMs = 5 * 60 * 1000;
 
-// Create widget
+// Build widget UI
 const clockEl = document.createElement('div');
 clockEl.id = 'calendar-clock';
 clockEl.innerHTML = `
@@ -16,7 +16,7 @@ clockEl.innerHTML = `
 `;
 document.body.appendChild(clockEl);
 
-// Make it draggable
+// Enable dragging
 makeDraggable(clockEl);
 
 function makeDraggable(elm) {
@@ -30,54 +30,57 @@ function makeDraggable(elm) {
     document.onmousemove = (ev) => {
       ev.preventDefault();
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
-      elm.style.top = origTop + dy + 'px';
-      elm.style.left = origLeft + dx + 'px';
+      elm.style.top = `${origTop + dy}px`;
+      elm.style.left = `${origLeft + dx}px`;
     };
   }
 }
 
-// Buttons manual override
+// Button override logic
 clockEl.querySelectorAll('button').forEach(btn => {
   btn.onclick = () => {
     const prev = idx;
     idx = parseInt(btn.dataset.i);
-    if (prev === states.length - 1 && idx === 0) incrementDate();
+    if (prev === states.length -1 && idx === 0) incrementDate();
     updateWidget();
   };
 });
 
-function incrementDate(){
+function incrementDate() {
   dayCount++;
   date.day++;
-  if(date.day>30){
-    date.day=1;
+  if (date.day > 30) {
+    date.day = 1;
     date.month++;
-    if(date.month>12){ date.month=1; date.year++; }
+    if (date.month > 12) {
+      date.month = 1;
+      date.year++;
+    }
   }
 }
 
-function updateWidget(){
+function updateWidget() {
   document.getElementById('time-label').textContent = states[idx];
   document.getElementById('date-label').textContent =
     `Day ${dayCount}, ${date.month}/${date.day}/${date.year}`;
 }
 
-// Auto advanced cycle
-setInterval(()=> {
+// Auto-cycle timer
+setInterval(() => {
   const prev = idx;
-  idx = (idx +1) % states.length;
-  if(prev === states.length -1 && idx === 0) incrementDate();
+  idx = (idx + 1) % states.length;
+  if (prev === states.length -1 && idx === 0) incrementDate();
   updateWidget();
 }, intervalMs);
 
 // Prompt interceptor
 globalThis.injectTimeOfDay = async function(chat) {
   const label = states[idx];
-  const msg = {
+  const sys = {
     is_user: false,
     name: "TimeOfDay",
     send_date: Date.now(),
     mes: `[Time: ${label}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`
   };
-  chat.unshift(msg);
+  chat.unshift(sys);
 };
