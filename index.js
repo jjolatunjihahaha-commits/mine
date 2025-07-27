@@ -1,5 +1,6 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock – core logic
+   Time‑Cycle Gradient Clock – v2.5.0
+   Collapse animation & summary line
 ────────────────────────────────────────── */
 
 const states = [
@@ -9,35 +10,45 @@ const states = [
   { emoji: '🌃', name: 'Night' }
 ];
 
-let idx       = 0;
-let dayCount  = 1;
-let date      = { day: 1, month: 1, year: 1 };
+let idx        = 0;
+let dayCount   = 1;
+let date       = { day: 1, month: 1, year: 1 };
+let collapsed  = false;
 const intervalMs = 5 * 60 * 1000;
 
-/* ── persistence ── */
+/* persistence */
 function loadState() {
   const saved = JSON.parse(localStorage.getItem('clockState'));
   if (saved) {
-    idx       = saved.idx;
-    dayCount  = saved.dayCount;
-    date      = saved.date;
+    idx       = saved.idx        ?? idx;
+    dayCount  = saved.dayCount   ?? dayCount;
+    date      = saved.date       ?? date;
+    collapsed = saved.collapsed  ?? collapsed;
   }
 }
 function saveState() {
-  localStorage.setItem('clockState', JSON.stringify({ idx, dayCount, date }));
+  localStorage.setItem(
+    'clockState',
+    JSON.stringify({ idx, dayCount, date, collapsed })
+  );
 }
 
-/* ── date helpers ── */
+/* date helper */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
 
-/* ── widget build ── */
+/* widget skeleton */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
+  <button id="toggle-btn" title="Collapse / Expand">▾</button>
   <button id="edit-date-btn" title="Edit date">🖊️</button>
+
   <div id="time-label"></div>
   <p id="day-label"></p>
   <p id="date-label"></p>
+
+  <p id="summary-label"></p>
+
   <div id="bar-container">
     <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
@@ -46,13 +57,19 @@ clock.innerHTML = `
 `;
 document.body.appendChild(clock);
 
-/* ── draggable ── */
+/* apply collapsed UI instantly */
+function applyCollapsedUI() {
+  clock.classList.toggle('collapsed', collapsed);
+  document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
+}
+
+/* draggable (ignore corner buttons) */
 clock.onmousedown = e => {
-  if (e.target.id === 'edit-date-btn') return;   // don't drag from edit button
+  if (['edit-date-btn', 'toggle-btn'].includes(e.target.id)) return;
   e.preventDefault();
   const start = { x: e.clientX, y: e.clientY };
   const orig  = { left: clock.offsetLeft, top: clock.offsetTop };
-  document.onmouseup   = () => document.onmousemove = null;
+  document.onmouseup   = () => (document.onmousemove = null);
   document.onmousemove = ev => {
     ev.preventDefault();
     clock.style.left = `${orig.left + ev.clientX - start.x}px`;
@@ -60,7 +77,7 @@ clock.onmousedown = e => {
   };
 };
 
-/* ── navigation ── */
+/* navigation buttons */
 document.getElementById('prev-btn').onclick = () => {
   const prevIdx = idx;
   idx = (idx - 1 + states.length) % states.length;
@@ -74,14 +91,20 @@ document.getElementById('next-btn').onclick = () => {
   updateClock();
 };
 
-/* ── manual date editor ── */
+/* collapse/expand */
+document.getElementById('toggle-btn').onclick = () => {
+  collapsed = !collapsed;
+  applyCollapsedUI();
+  saveState();
+};
+
+/* edit date */
 document.getElementById('edit-date-btn').onclick = () => {
   const input = prompt(
     'Enter new date (MM/DD/YYYY):',
     `${date.month}/${date.day}/${date.year}`
   );
   if (!input) return;
-
   const parts = input.split('/').map(Number);
   if (parts.length !== 3 || parts.some(isNaN)) {
     alert('Invalid format. Use MM/DD/YYYY.');
@@ -94,11 +117,11 @@ document.getElementById('edit-date-btn').onclick = () => {
     return;
   }
   date = { month: mm, day: dd, year: yyyy };
-  dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd;   // rough tally
+  dayCount = ((yyyy - 1) * 360) + ((mm - 1) * 30) + dd; // approx
   updateClock();
 };
 
-/* ── day increment helpers ── */
+/* date arithmetic */
 function incrementDay() {
   dayCount++;
   date.day++;
@@ -112,12 +135,18 @@ function incrementDay() {
   }
 }
 function decrementDay() {
-  dayCount = Math.max(1, dayCount - 1);
+  dayCount  = Math.max(1, dayCount - 1);
   date.day  = Math.max(1, date.day  - 1);
 }
 
-/* ── render ── */
+/* produce summary string */
+function summaryText() {
+  return `${states[idx].emoji} ${states[idx].name} — D${dayCount} — ${String(date.month).padStart(2, '0')}/${String(date.day).padStart(2, '0')}/${date.year}`;
+}
+
+/* render everything */
 function updateClock() {
+  /* main labels */
   document.getElementById('time-label').textContent =
     `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
 
@@ -125,13 +154,17 @@ function updateClock() {
   document.getElementById('date-label').textContent =
     `${date.month}/${date.day}/${date.year}`;
 
+  /* summary line */
+  document.getElementById('summary-label').textContent = summaryText();
+
+  /* pointer position */
   const pct = ((idx + 0.5) / states.length) * 100;
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 
   saveState();
 }
 
-/* ── auto‑cycle ── */
+/* auto‑cycle every 5 min */
 setInterval(() => {
   const prevIdx = idx;
   idx = (idx + 1) % states.length;
@@ -139,7 +172,7 @@ setInterval(() => {
   updateClock();
 }, intervalMs);
 
-/* ── inject timestamp into chat ── */
+/* chat timestamp */
 globalThis.injectTimeOfDay = async chat => {
   chat.unshift({
     is_user  : false,
@@ -149,6 +182,7 @@ globalThis.injectTimeOfDay = async chat => {
   });
 };
 
-/* ── init ── */
+/* init */
 loadState();
+applyCollapsedUI();
 updateClock();
