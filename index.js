@@ -1,40 +1,40 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v3.0.0
-   • 24‑hour time system
+   Time‑Cycle Gradient Clock  v3.1.0
+   • 24‑hour system
    • Auto‑advance 1 hour every 5 minutes
-   • Time‑of‑day phase derived from hour
+   • Progress bar now shows an hour tick for each of 24 hours
 ────────────────────────────────────────── */
 
 const phases = [
   { name: 'Night',   emoji: '🌃', from: 21, to: 4  },  // 21‑04
   { name: 'Morning', emoji: '🌅', from: 5,  to: 11 },  // 05‑11
-  { name: 'Noon',    emoji: '☀️', from: 12, to: 16 },  // 12‑16
+  { name: 'Noon',    emoji: '☀️', from: 12, to: 16 }, // 12‑16
   { name: 'Evening', emoji: '🌇', from: 17, to: 20 }   // 17‑20
 ];
 
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let hour = 6;                 // current hour (0‑23)
-let dayCount = 1;             // Day 1 = Monday
+let hour = 6;        // current hour (0‑23)
+let dayCount = 1;    // Day 1 = Monday
 let date = { day: 1, month: 1, year: 1 };
 
 let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
 
-/* advance 1 in‑widget hour every 5 real‑minutes */
+/* one in‑widget hour passes every 5 real minutes */
 const intervalMs = 5 * 60 * 1000;
 
-/* ── persistence helpers ─────────────────── */
+/* ── persistence ───────────────────────── */
 function loadState() {
-  const saved = JSON.parse(localStorage.getItem('clockState'));
-  if (!saved) return;
-  hour       = saved.hour      ?? hour;
-  dayCount   = saved.dayCount  ?? dayCount;
-  date       = saved.date      ?? date;
-  collapsed  = saved.collapsed ?? collapsed;
-  pos        = saved.pos       ?? pos;
-  size       = saved.size      ?? size;
+  const s = JSON.parse(localStorage.getItem('clockState'));
+  if (!s) return;
+  hour       = s.hour      ?? hour;
+  dayCount   = s.dayCount  ?? dayCount;
+  date       = s.date      ?? date;
+  collapsed  = s.collapsed ?? collapsed;
+  pos        = s.pos       ?? pos;
+  size       = s.size      ?? size;
 }
 function saveState() {
   localStorage.setItem('clockState',
@@ -43,19 +43,19 @@ function saveState() {
 }
 loadState();
 
-/* ── utility fns ─────────────────────────── */
+/* ── helpers ───────────────────────────── */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
 const getWeekday     = ()     => weekdays[(dayCount - 1) % 7];
 const getPhase       = ()     => phases.find(p =>
   p.from <= p.to ? (hour >= p.from && hour <= p.to)
                  : (hour >= p.from || hour <= p.to)
 );
-const timeSummary    = () =>
+const timeSummary = () =>
   `[Time: ${getPhase().name}, ${getWeekday()}, ${String(hour).padStart(2,'0')}:00, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
-const fullPrompt     = () =>
+const fullPrompt  = () =>
   `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
 
- /* ── build widget ───────────────────────── */
+ /* ── build widget ─────────────────────── */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
@@ -78,18 +78,27 @@ clock.innerHTML = `
 `;
 document.body.appendChild(clock);
 
-/* apply saved position & size */
+/* saved position & size */
 clock.style.left  = `${pos.left}px`;
 clock.style.top   = `${pos.top }px`;
 clock.style.width = `${size.width}px`;
 
-/* ── collapse helper ────────────────────── */
+/* ── create 24 tick lines on bar ───────── */
+const progressBar = clock.querySelector('#progress-bar');
+for (let h = 0; h < 24; h++) {
+  const t = document.createElement('div');
+  t.className = 'hour-tick' + (h % 6 === 0 ? ' major' : '');
+  t.style.left = `${(h / 24) * 100}%`;
+  progressBar.appendChild(t);
+}
+
+/* ── UI helpers ───────────────────────── */
 function applyCollapsedUI() {
   clock.classList.toggle('collapsed', collapsed);
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
 }
 
-/* ── drag‑move widget ───────────────────── */
+/* drag‑move */
 clock.onmousedown = e => {
   if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
@@ -108,10 +117,9 @@ clock.onmousedown = e => {
   };
 };
 
-/* ── resize handle ──────────────────────── */
+/* resize */
 document.getElementById('resize-handle').onmousedown = e => {
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   const start = { x: e.clientX, width: clock.offsetWidth };
 
   document.onmouseup = () => {
@@ -121,36 +129,33 @@ document.getElementById('resize-handle').onmousedown = e => {
   };
   document.onmousemove = ev => {
     ev.preventDefault();
-    let newW = start.width + (ev.clientX - start.x);
-    newW = Math.max(180, Math.min(newW, 600));
+    const newW = Math.max(180, Math.min(start.width + ev.clientX - start.x, 600));
     clock.style.width = `${newW}px`;
   };
 };
 
-/* ── navigation buttons ─────────────────── */
+/* nav buttons */
 document.getElementById('prev-btn').onclick = () => {
-  hour--;
-  if (hour < 0) { hour = 23; decrementDay(); }
+  hour--; if (hour < 0) { hour = 23; decrementDay(); }
   updateClock();
 };
 document.getElementById('next-btn').onclick = () => {
-  hour++;
-  if (hour > 23) { hour = 0; incrementDay(); }
+  hour++; if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
 };
 
-/* ── collapse toggle ────────────────────── */
+/* collapse toggle */
 document.getElementById('toggle-btn').onclick = () => {
   collapsed = !collapsed;
   applyCollapsedUI();
   saveState();
 };
 
-/* ── edit date ──────────────────────────── */
+/* edit date */
 document.getElementById('edit-date-btn').onclick = () => {
-  const input = prompt('Enter new date (MM/DD/YYYY):', `${date.month}/${date.day}/${date.year}`);
-  if (!input) return;
-  const [mm, dd, yy] = input.split('/').map(Number);
+  const inp = prompt('Enter new date (MM/DD/YYYY):', `${date.month}/${date.day}/${date.year}`);
+  if (!inp) return;
+  const [mm, dd, yy] = inp.split('/').map(Number);
   if ([mm, dd, yy].some(isNaN) || mm < 1 || mm > 12 ||
       dd < 1 || dd > getDaysInMonth(mm, yy) || yy < 1)
     return alert('Invalid date.');
@@ -159,7 +164,7 @@ document.getElementById('edit-date-btn').onclick = () => {
   updateClock();
 };
 
-/* ── date math ─────────────────────────── */
+/* day math */
 function incrementDay() {
   dayCount++; date.day++;
   if (date.day > getDaysInMonth(date.month, date.year)) {
@@ -177,16 +182,16 @@ function decrementDay() {
   }
 }
 
-/* ── render UI ─────────────────────────── */
+/* render clock */
 function updateClock() {
   const phase = getPhase();
 
-  document.getElementById('time-label'    ).textContent =
+  document.getElementById('time-label').textContent =
     `${phase.emoji} ${phase.name} ${phase.emoji} — ${String(hour).padStart(2,'0')}:00`;
-  document.getElementById('day-label'     ).textContent = `Day ${dayCount}`;
-  document.getElementById('weekday-label' ).textContent = getWeekday();
-  document.getElementById('date-label'    ).textContent = `${date.month}/${date.day}/${date.year}`;
-  document.getElementById('summary-label' ).textContent = timeSummary();
+  document.getElementById('day-label').textContent      = `Day ${dayCount}`;
+  document.getElementById('weekday-label').textContent  = getWeekday();
+  document.getElementById('date-label').textContent     = `${date.month}/${date.day}/${date.year}`;
+  document.getElementById('summary-label').textContent  = timeSummary();
 
   const pct = ((hour + 0.5) / 24) * 100;
   document.getElementById('progress-pointer').style.left = `${pct}%`;
@@ -194,23 +199,17 @@ function updateClock() {
   saveState();
 }
 
-/* ── auto‑cycle ────────────────────────── */
+/* auto‑advance */
 setInterval(() => {
-  hour++;
-  if (hour > 23) { hour = 0; incrementDay(); }
+  hour++; if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
 }, intervalMs);
 
-/* ── LLM interceptor – inject EVERY time ─ */
+/* LLM interceptor */
 globalThis.injectTimeOfDay = async chat => {
-  chat.unshift({
-    is_user  : false,
-    name     : 'System',
-    send_date: Date.now(),
-    mes      : fullPrompt()
-  });
+  chat.unshift({ is_user:false, name:'System', send_date:Date.now(), mes:fullPrompt() });
 };
 
-/* ── init ─────────────────────────────── */
+/* init */
 applyCollapsedUI();
 updateClock();
