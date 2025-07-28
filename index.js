@@ -1,9 +1,8 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v3.2.0
-   • 24‑hour system
-   • Auto‑advance 1 hour every 5 minutes
-   • Progress bar shows 24 hour‑ticks
-   • Bar gradient smoothly transitions through Night → Morning → Noon → Evening → Night
+   Time‑Cycle Gradient Clock  v3.3.0
+   • 24‑hour system ― 1 hour passes every 5 real minutes
+   • Bar shows 24 hour ticks + smooth day‑night gradient
+   • AM / PM added to labels & injected summary
 ────────────────────────────────────────── */
 
 const phases = [
@@ -51,9 +50,11 @@ const getPhase       = ()     => phases.find(p =>
   p.from <= p.to ? (hour >= p.from && hour <= p.to)
                  : (hour >= p.from || hour <= p.to)
 );
-const timeSummary = () =>
-  `[Time: ${getPhase().name}, ${getWeekday()}, ${String(hour).padStart(2,'0')}:00, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
-const fullPrompt  = () =>
+const hr12           = h => ((h + 11) % 12) + 1;
+const ampm           = h => (h < 12 ? 'AM' : 'PM');
+const timeSummary    = () =>
+  `[Time: ${getPhase().name}, ${getWeekday()}, ${hr12(hour)}:00 ${ampm(hour)}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
+const fullPrompt     = () =>
   `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
 
  /* ── build widget ─────────────────────── */
@@ -79,7 +80,7 @@ clock.innerHTML = `
 `;
 document.body.appendChild(clock);
 
-/* saved position & size */
+/* saved position / size */
 clock.style.left  = `${pos.left}px`;
 clock.style.top   = `${pos.top }px`;
 clock.style.width = `${size.width}px`;
@@ -188,7 +189,7 @@ function updateClock() {
   const phase = getPhase();
 
   document.getElementById('time-label').textContent =
-    `${phase.emoji} ${phase.name} ${phase.emoji} — ${String(hour).padStart(2,'0')}:00`;
+    `${phase.emoji} ${phase.name} ${phase.emoji} — ${hr12(hour)}:00 ${ampm(hour)}`;
   document.getElementById('day-label').textContent      = `Day ${dayCount}`;
   document.getElementById('weekday-label').textContent  = getWeekday();
   document.getElementById('date-label').textContent     = `${date.month}/${date.day}/${date.year}`;
