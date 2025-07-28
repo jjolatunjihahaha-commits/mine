@@ -1,60 +1,61 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v2.8.2
-   • Injects prompt on every message (no change check)
-   • Auto‑advance every 10 minutes
-   • Day 1 = Monday; resizable width persists
+   Time‑Cycle Gradient Clock  v3.0.0
+   • 24‑hour time system
+   • Auto‑advance 1 hour every 5 minutes
+   • Time‑of‑day phase derived from hour
 ────────────────────────────────────────── */
 
-const states = [
-  { emoji: '🌅', name: 'Morning' },
-  { emoji: '☀️', name: 'Noon'    },
-  { emoji: '🌇', name: 'Evening' },
-  { emoji: '🌃', name: 'Night'   }
+const phases = [
+  { name: 'Night',   emoji: '🌃', from: 21, to: 4  },  // 21‑04
+  { name: 'Morning', emoji: '🌅', from: 5,  to: 11 },  // 05‑11
+  { name: 'Noon',    emoji: '☀️', from: 12, to: 16 },  // 12‑16
+  { name: 'Evening', emoji: '🌇', from: 17, to: 20 }   // 17‑20
 ];
 
-/* Monday‑first weekday list */
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let idx = 0;                 // current time‑of‑day index
-let dayCount = 1;            // Day 1 = Monday
+let hour = 6;                 // current hour (0‑23)
+let dayCount = 1;             // Day 1 = Monday
 let date = { day: 1, month: 1, year: 1 };
 
 let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
 
-/* auto‑cycle every 10 minutes */
-const intervalMs = 10 * 60 * 1000;
+/* advance 1 in‑widget hour every 5 real‑minutes */
+const intervalMs = 5 * 60 * 1000;
 
-/* ── persistence ───────────────────────── */
+/* ── persistence helpers ─────────────────── */
 function loadState() {
   const saved = JSON.parse(localStorage.getItem('clockState'));
   if (!saved) return;
-  idx        = saved.idx        ?? idx;
-  dayCount   = saved.dayCount   ?? dayCount;
-  date       = saved.date       ?? date;
-  collapsed  = saved.collapsed  ?? collapsed;
-  pos        = saved.pos        ?? pos;
-  size       = saved.size       ?? size;
+  hour       = saved.hour      ?? hour;
+  dayCount   = saved.dayCount  ?? dayCount;
+  date       = saved.date      ?? date;
+  collapsed  = saved.collapsed ?? collapsed;
+  pos        = saved.pos       ?? pos;
+  size       = saved.size      ?? size;
 }
 function saveState() {
   localStorage.setItem('clockState',
-    JSON.stringify({ idx, dayCount, date, collapsed, pos, size })
+    JSON.stringify({ hour, dayCount, date, collapsed, pos, size })
   );
 }
-
-/* load saved values first */
 loadState();
 
-/* ── helpers ───────────────────────────── */
+/* ── utility fns ─────────────────────────── */
 const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate();
 const getWeekday     = ()     => weekdays[(dayCount - 1) % 7];
+const getPhase       = ()     => phases.find(p =>
+  p.from <= p.to ? (hour >= p.from && hour <= p.to)
+                 : (hour >= p.from || hour <= p.to)
+);
 const timeSummary    = () =>
-  `[Time: ${states[idx].name}, ${getWeekday()}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
+  `[Time: ${getPhase().name}, ${getWeekday()}, ${String(hour).padStart(2,'0')}:00, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
 const fullPrompt     = () =>
   `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
 
-/* ── build widget ──────────────────────── */
+ /* ── build widget ───────────────────────── */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
@@ -68,9 +69,9 @@ clock.innerHTML = `
   <p   id="summary-label"></p>
 
   <div id="bar-container">
-    <button class="nav-arrow" id="prev-btn" title="Previous time">&#8249;</button>
+    <button class="nav-arrow" id="prev-btn" title="Previous hour">&#8249;</button>
     <div id="progress-bar"><div id="progress-pointer"></div></div>
-    <button class="nav-arrow" id="next-btn" title="Next time">&#8250;</button>
+    <button class="nav-arrow" id="next-btn" title="Next hour">&#8250;</button>
   </div>
 
   <div id="resize-handle" title="Resize"></div>
@@ -82,13 +83,13 @@ clock.style.left  = `${pos.left}px`;
 clock.style.top   = `${pos.top }px`;
 clock.style.width = `${size.width}px`;
 
-/* ── collapse helper ───────────────────── */
+/* ── collapse helper ────────────────────── */
 function applyCollapsedUI() {
   clock.classList.toggle('collapsed', collapsed);
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
 }
 
-/* ── drag‑move widget ──────────────────── */
+/* ── drag‑move widget ───────────────────── */
 clock.onmousedown = e => {
   if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
@@ -107,7 +108,7 @@ clock.onmousedown = e => {
   };
 };
 
-/* ── resize handle ─────────────────────── */
+/* ── resize handle ──────────────────────── */
 document.getElementById('resize-handle').onmousedown = e => {
   e.preventDefault();
   e.stopPropagation();
@@ -126,33 +127,32 @@ document.getElementById('resize-handle').onmousedown = e => {
   };
 };
 
-/* ── navigation buttons ────────────────── */
+/* ── navigation buttons ─────────────────── */
 document.getElementById('prev-btn').onclick = () => {
-  const prev = idx;
-  idx = (idx - 1 + states.length) % states.length;
-  if (prev === 0 && idx === states.length - 1) decrementDay();
+  hour--;
+  if (hour < 0) { hour = 23; decrementDay(); }
   updateClock();
 };
 document.getElementById('next-btn').onclick = () => {
-  const prev = idx;
-  idx = (idx + 1) % states.length;
-  if (prev === states.length - 1 && idx === 0) incrementDay();
+  hour++;
+  if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
 };
 
-/* ── collapse toggle ───────────────────── */
+/* ── collapse toggle ────────────────────── */
 document.getElementById('toggle-btn').onclick = () => {
   collapsed = !collapsed;
   applyCollapsedUI();
   saveState();
 };
 
-/* ── edit date ─────────────────────────── */
+/* ── edit date ──────────────────────────── */
 document.getElementById('edit-date-btn').onclick = () => {
   const input = prompt('Enter new date (MM/DD/YYYY):', `${date.month}/${date.day}/${date.year}`);
   if (!input) return;
   const [mm, dd, yy] = input.split('/').map(Number);
-  if ([mm, dd, yy].some(isNaN) || mm < 1 || mm > 12 || dd < 1 || dd > getDaysInMonth(mm, yy) || yy < 1)
+  if ([mm, dd, yy].some(isNaN) || mm < 1 || mm > 12 ||
+      dd < 1 || dd > getDaysInMonth(mm, yy) || yy < 1)
     return alert('Invalid date.');
   date = { month: mm, day: dd, year: yy };
   dayCount = ((yy - 1) * 360) + ((mm - 1) * 30) + dd;
@@ -177,25 +177,27 @@ function decrementDay() {
   }
 }
 
-/* ── render all UI ─────────────────────── */
+/* ── render UI ─────────────────────────── */
 function updateClock() {
-  document.getElementById('time-label'    ).textContent = `${states[idx].emoji} ${states[idx].name} ${states[idx].emoji}`;
+  const phase = getPhase();
+
+  document.getElementById('time-label'    ).textContent =
+    `${phase.emoji} ${phase.name} ${phase.emoji} — ${String(hour).padStart(2,'0')}:00`;
   document.getElementById('day-label'     ).textContent = `Day ${dayCount}`;
   document.getElementById('weekday-label' ).textContent = getWeekday();
   document.getElementById('date-label'    ).textContent = `${date.month}/${date.day}/${date.year}`;
   document.getElementById('summary-label' ).textContent = timeSummary();
 
-  const pct = ((idx + 0.5) / states.length) * 100;
+  const pct = ((hour + 0.5) / 24) * 100;
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 
   saveState();
 }
 
-/* ── auto-cycle ────────────────────────── */
+/* ── auto‑cycle ────────────────────────── */
 setInterval(() => {
-  const prev = idx;
-  idx = (idx + 1) % states.length;
-  if (prev === states.length - 1 && idx === 0) incrementDay();
+  hour++;
+  if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
 }, intervalMs);
 
