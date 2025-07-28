@@ -74,12 +74,20 @@
 
 #progress-bar{
   flex:1;height:var(--bar-height);margin:0 var(--gap);border-radius:6px;
+  /*  Night(0‑4) → Sunrise(5‑11) → Day(12‑16) → Sunset(17‑20) → Night(21‑23)  */
   background:linear-gradient(
     to right,
-    #F6C270 0%,   #F6C270 25%,
-    #87CEEB 25%,  #87CEEB 50%,
-    #FF8FAB 50%,  #FF8FAB 75%,
-    #2C3E50 75%,  #2C3E50 100%);
+    #2C3E50 0%,           /* midnight‑night */
+    #2C3E50 16.67%,       /* 04:00 */
+    #F6C270 20.83%,       /* 05:00 sunrise */
+    #F6C270 45.83%,       /* 11:00 */
+    #87CEEB 50%,          /* 12:00 noon */
+    #87CEEB 66.67%,       /* 16:00 */
+    #FF8FAB 70.83%,       /* 17:00 sunset */
+    #FF8FAB 83.33%,       /* 20:00 */
+    #2C3E50 87.5%,        /* 21:00 */
+    #2C3E50 100%          /* 23:59 */
+  );
   position:relative;
 }
 #progress-pointer{
@@ -94,7 +102,7 @@
 /* hour tick marks */
 .hour-tick{
   position:absolute;
-  top:-4px; /* sits just above bar */
+  top:-4px;
   width:1px;
   height:calc(var(--bar-height) + 8px);
   background:#fafafa;
@@ -102,7 +110,7 @@
   transform:translateX(-50%);
   pointer-events:none;
 }
-.hour-tick.major{            /* every 6 hours */
+.hour-tick.major{
   width:2px;
   height:calc(var(--bar-height) + 10px);
   opacity:.85;
@@ -119,7 +127,7 @@
 }
 #calendar-clock.collapsed #resize-handle{display:none;}
 
-/* collapsed look */
+/* collapsed */
 #calendar-clock.collapsed{
   padding:10px 14px 12px;
   max-height:64px;
