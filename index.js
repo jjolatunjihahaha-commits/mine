@@ -52,7 +52,7 @@ const getWeekday     = ()     => weekdays[(dayCount - 1) % 7];
 const timeSummary    = () =>
   `[Time: ${states[idx].name}, ${getWeekday()}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
 const fullPrompt     = () =>
-  `${timeSummary()}\n\n{{char}} will continue the conversation in context of the current day and time.`;
+  `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
 
 /* ── build widget ──────────────────────── */
 const clock = document.createElement('div');
