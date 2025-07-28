@@ -74,19 +74,20 @@
 
 #progress-bar{
   flex:1;height:var(--bar-height);margin:0 var(--gap);border-radius:6px;
-  /*  Night(0‑4) → Sunrise(5‑11) → Day(12‑16) → Sunset(17‑20) → Night(21‑23)  */
+  /*  Night → Dawn → Morning → Midday → Afternoon → Sunset → Evening → Night  */
   background:linear-gradient(
     to right,
-    #2C3E50 0%,           /* midnight‑night */
-    #2C3E50 16.67%,       /* 04:00 */
-    #F6C270 20.83%,       /* 05:00 sunrise */
-    #F6C270 45.83%,       /* 11:00 */
-    #87CEEB 50%,          /* 12:00 noon */
-    #87CEEB 66.67%,       /* 16:00 */
-    #FF8FAB 70.83%,       /* 17:00 sunset */
-    #FF8FAB 83.33%,       /* 20:00 */
-    #2C3E50 87.5%,        /* 21:00 */
-    #2C3E50 100%          /* 23:59 */
+    #001d3a 0%,            /* 00 */
+    #001d3a 16.67%,        /* 04 */
+    #25386b 20.83%,        /* 05 pre‑dawn */
+    #f28d35 25%,           /* 06 sunrise orange */
+    #ffd658 45.83%,        /* 11 bright morning yellow */
+    #87CEEB 50%,           /* 12 noon sky blue */
+    #73b7ff 66.67%,        /* 16 soft afternoon blue */
+    #ff724d 70.83%,        /* 17 sunset orange‑red */
+    #ff724d 79.17%,        /* 19 */
+    #432d5c 87.5%,         /* 21 dusk purple */
+    #001d3a 100%           /* 24 */
   );
   position:relative;
 }
@@ -127,7 +128,7 @@
 }
 #calendar-clock.collapsed #resize-handle{display:none;}
 
-/* collapsed */
+/* collapsed style */
 #calendar-clock.collapsed{
   padding:10px 14px 12px;
   max-height:64px;
