@@ -1,7 +1,8 @@
 /* ──────────────────────────────────────────
-   Time-Cycle Gradient Clock  v2.8.0
-   • Injects a system prompt only when time-of-day changes
-   • Day 1 = Monday; resizable width persists
+   Time‑Cycle Gradient Clock  v2.8.2
+   • Injects prompt on every message (no change check)
+   • Auto‑advance every 10 minutes
+   • Day 1 = Monday; resizable width persists
 ────────────────────────────────────────── */
 
 const states = [
@@ -11,19 +12,19 @@ const states = [
   { emoji: '🌃', name: 'Night'   }
 ];
 
-/* Monday-first weekday list */
+/* Monday‑first weekday list */
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let idx = 0;                 // current time-of-day index
-let dayCount = 1;            // Day 1 = Monday
+let idx = 0;                 // current time‑of‑day index
+let dayCount = 1;            // Day 1 = Monday
 let date = { day: 1, month: 1, year: 1 };
 
 let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
 
-const intervalMs = 10 * 60 * 1000;           // auto-advance every 10 min
-let lastInjectedIdx = null;                 // track last sent time block
+/* auto‑cycle every 10 minutes */
+const intervalMs = 10 * 60 * 1000;
 
 /* ── persistence ───────────────────────── */
 function loadState() {
@@ -42,7 +43,7 @@ function saveState() {
   );
 }
 
-/* load stored values first */
+/* load saved values first */
 loadState();
 
 /* ── helpers ───────────────────────────── */
@@ -51,7 +52,7 @@ const getWeekday     = ()     => weekdays[(dayCount - 1) % 7];
 const timeSummary    = () =>
   `[Time: ${states[idx].name}, ${getWeekday()}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
 const fullPrompt     = () =>
-  `${timeSummary()}\n\n{{char}} will stop whatevr they are doing and continue the conversation in context of the current day and time.`;
+  `${timeSummary()}\n\n{{char}} will continue the conversation in context of the current day and time.`;
 
 /* ── build widget ──────────────────────── */
 const clock = document.createElement('div');
@@ -87,7 +88,7 @@ function applyCollapsedUI() {
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
 }
 
-/* ── drag-move widget ──────────────────── */
+/* ── drag‑move widget ──────────────────── */
 clock.onmousedown = e => {
   if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
@@ -198,17 +199,14 @@ setInterval(() => {
   updateClock();
 }, intervalMs);
 
-/* ── LLM interceptor ───────────────────── */
+/* ── LLM interceptor – inject EVERY time ─ */
 globalThis.injectTimeOfDay = async chat => {
-  if (idx !== lastInjectedIdx) {
-    lastInjectedIdx = idx;
-    chat.unshift({
-      is_user  : false,
-      name     : 'System',
-      send_date: Date.now(),
-      mes      : fullPrompt()
-    });
-  }
+  chat.unshift({
+    is_user  : false,
+    name     : 'System',
+    send_date: Date.now(),
+    mes      : fullPrompt()
+  });
 };
 
 /* ── init ─────────────────────────────── */
