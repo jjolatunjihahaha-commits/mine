@@ -1,21 +1,22 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v3.1.0
+   Time‑Cycle Gradient Clock  v3.2.0
    • 24‑hour system
    • Auto‑advance 1 hour every 5 minutes
-   • Progress bar now shows an hour tick for each of 24 hours
+   • Progress bar shows 24 hour‑ticks
+   • Bar gradient smoothly transitions through Night → Morning → Noon → Evening → Night
 ────────────────────────────────────────── */
 
 const phases = [
-  { name: 'Night',   emoji: '🌃', from: 21, to: 4  },  // 21‑04
-  { name: 'Morning', emoji: '🌅', from: 5,  to: 11 },  // 05‑11
-  { name: 'Noon',    emoji: '☀️', from: 12, to: 16 }, // 12‑16
-  { name: 'Evening', emoji: '🌇', from: 17, to: 20 }   // 17‑20
+  { name: 'Night',   emoji: '🌃', from: 21, to: 4  },
+  { name: 'Morning', emoji: '🌅', from: 5,  to: 11 },
+  { name: 'Noon',    emoji: '☀️', from: 12, to: 16 },
+  { name: 'Evening', emoji: '🌇', from: 17, to: 20 }
 ];
 
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let hour = 6;        // current hour (0‑23)
-let dayCount = 1;    // Day 1 = Monday
+let hour = 6;        // 0‑23
+let dayCount = 1;
 let date = { day: 1, month: 1, year: 1 };
 
 let collapsed = false;
@@ -83,13 +84,13 @@ clock.style.left  = `${pos.left}px`;
 clock.style.top   = `${pos.top }px`;
 clock.style.width = `${size.width}px`;
 
-/* ── create 24 tick lines on bar ───────── */
+/* ── add 24 tick lines ─────────────────── */
 const progressBar = clock.querySelector('#progress-bar');
 for (let h = 0; h < 24; h++) {
-  const t = document.createElement('div');
-  t.className = 'hour-tick' + (h % 6 === 0 ? ' major' : '');
-  t.style.left = `${(h / 24) * 100}%`;
-  progressBar.appendChild(t);
+  const tick = document.createElement('div');
+  tick.className = 'hour-tick' + (h % 6 === 0 ? ' major' : '');
+  tick.style.left = `${(h / 24) * 100}%`;
+  progressBar.appendChild(tick);
 }
 
 /* ── UI helpers ───────────────────────── */
