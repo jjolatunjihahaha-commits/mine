@@ -22,7 +22,7 @@ let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
 
-const intervalMs = 5 * 60 * 1000;           // auto-advance every 5 min
+const intervalMs = 10 * 60 * 1000;           // auto-advance every 10 min
 let lastInjectedIdx = null;                 // track last sent time block
 
 /* ── persistence ───────────────────────── */
