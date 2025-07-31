@@ -135,8 +135,33 @@
   gap:2px;
 }
 #calendar-clock.collapsed #time-label,
+
 #calendar-clock.collapsed #bar-container,
 #calendar-clock.collapsed #day-label,
 #calendar-clock.collapsed #weekday-label,
 #calendar-clock.collapsed #date-label{display:none;}
 #calendar-clock.collapsed #summary-label{display:block;}
+#story-manager-section,
+#suggestion-generator-section {
+  width: 100%;
+  margin-top: 10px;
+  background: #1f2127;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+#story-manager-section h3,
+#suggestion-generator-section h3 {
+  margin: 0 0 8px 0;
+  color: #ffc107;
+}
+#story-manager-section textarea,
+#suggestion-generator-section textarea {
+  width: 100%;
+  margin-top: 6px;
+  background: #2e3138;
+  color: #e0e0e0;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+}
