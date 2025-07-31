@@ -1,8 +1,8 @@
 /* ──────────────────────────────────────────
-   Time‑Cycle Gradient Clock  v3.3.0
-   • 24‑hour system ― 1 hour passes every 5 real minutes
-   • Bar shows 24 hour ticks + smooth day‑night gradient
-   • AM / PM added to labels & injected summary
+   Time-Cycle Gradient Clock  v3.3.0
+   • 24-hour system ― 1 hour passes every 5 real minutes
+   • Bar shows 24 hour ticks + smooth day-night gradient
+   • AM / PM added to labels & injected summary
 ────────────────────────────────────────── */
 
 const phases = [
@@ -14,7 +14,7 @@ const phases = [
 
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let hour = 6;        // 0‑23
+let hour = 6;        // 0-23
 let dayCount = 1;
 let date = { day: 1, month: 1, year: 1 };
 
@@ -22,7 +22,7 @@ let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
 
-/* one in‑widget hour passes every 5 real minutes */
+/* one in-widget hour passes every 5 real minutes */
 const intervalMs = 5 * 60 * 1000;
 
 /* ── persistence ───────────────────────── */
@@ -54,8 +54,17 @@ const hr12           = h => ((h + 11) % 12) + 1;
 const ampm           = h => (h < 12 ? 'AM' : 'PM');
 const timeSummary    = () =>
   `[Time: ${getPhase().name}, ${getWeekday()}, ${hr12(hour)}:00 ${ampm(hour)}, Day ${dayCount}, Date ${date.month}/${date.day}/${date.year}]`;
-const fullPrompt     = () =>
-  `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
+
+/*  ▼▼▼  UPDATED SECTION  ▼▼▼  */
+const fullPrompt = () => {
+  const phase = getPhase();
+  const base  = `${timeSummary()}\n\n{{char}} will always talk and behave in context of the current day and time.`;
+  const extra = (phase.name === 'Noon' || phase.name === 'Night')
+    ? ' Any messages to or from {{user}} are assumed to be text or phone call during this time, unless explicitly stated otherwise.'
+    : '';
+  return base + extra;
+};
+/*  ▲▲▲  UPDATED SECTION  ▲▲▲  */
 
  /* ── build widget ─────────────────────── */
 const clock = document.createElement('div');
@@ -100,7 +109,7 @@ function applyCollapsedUI() {
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
 }
 
-/* drag‑move */
+/* drag-move */
 clock.onmousedown = e => {
   if (['edit-date-btn','toggle-btn','resize-handle'].includes(e.target.id)) return;
   e.preventDefault();
@@ -201,7 +210,7 @@ function updateClock() {
   saveState();
 }
 
-/* auto‑advance */
+/* auto-advance */
 setInterval(() => {
   hour++; if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
