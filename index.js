@@ -1,6 +1,6 @@
 /* ──────────────────────────────────────────
-   Time-Cycle Gradient Clock  v3.3.1
-   • 24-hour system ― manual advance (prev / next buttons)
+   Time-Cycle Gradient Clock  v3.3.0
+   • 24-hour system ― manual advance only (no auto progression)
    • Bar shows 24 hour ticks + smooth day-night gradient
    • AM / PM added to labels & injected summary
 ────────────────────────────────────────── */
@@ -14,103 +14,115 @@ const phases = [
 
 const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let hour = 6;        // 0-23
-let dayCount = 1;
-let date = { day: 1, month: 1, year: 1 };
-
-let collapsed = false;
-let pos  = { left: 6, top: 6 };
-let size = { width: 260 };
-
-/* manual advance only (auto progression disabled) */
-const intervalMs = 5 * 60 * 1000; // preserved for potential future use, but unused now
+/* one in-widget hour previously passed every 5 real minutes */
+const intervalMs = 5 * 60 * 1000;
 
 /* ── persistence ───────────────────────── */
 function loadState() {
-  const s = JSON.parse(localStorage.getItem('clockState')); if (!s) return;
-  ({ hour, dayCount, date, collapsed, pos, size } = s);
+  const s = JSON.parse(localStorage.getItem('clockState'));
+  return s ?? { hour: 9, day: 1, month: 1, year: 2025, collapsed:false };
 }
 function saveState() {
-  localStorage.setItem('clockState', JSON.stringify({ hour, dayCount, date, collapsed, pos, size }));
+  localStorage.setItem('clockState', JSON.stringify({ hour, day, month, year, collapsed }));
 }
+
+/* state */
+let { hour, day, month, year, collapsed } = loadState();
 
 /* ── helpers ───────────────────────────── */
-function phaseFor(h) {
-  return phases.find(p => p.from <= p.to ? h >= p.from && h <= p.to : h >= p.from || h <= p.to);
-}
-function pad(n) { return (''+n).padStart(2,'0'); }
-function getDaysInMonth(m, y) { return (m===2?28:30) + (m===2 && y%4===0); }
-function fullPrompt() {
-  return `It is ${weekdays[(dayCount-1)%7]}, ${date.month}/${date.day}/${date.year}, hour ${hour} (${phaseFor(hour).name}).`;
-}
+function two(n){return n.toString().padStart(2,'0');}
+function labelHour(h){return`${h%12||12}${h<12?' AM':' PM'}`;}
+function fullPrompt(){return`Current in-widget time: ${labelHour(hour)} on ${weekdays[(day+3)%7]}, ${two(day)}/${two(month)}/${year}`;}
 
-/* ── UI setup ──────────────────────────── */
-const clock = document.getElementById('clock');
-const summary = document.getElementById('summary');
-const bar = document.getElementById('bar');
-const pp = document.getElementById('progress-pointer');
+/* ── build widget ─────────────────────── */
+const clock = document.createElement('div');
+clock.id = 'calendar-clock';
+clock.innerHTML = `
+  <button id="toggle-btn"     title="Collapse / Expand">▾</button>
+  <button id="edit-date-btn"  title="Edit date">🖊️</button>
 
-function updateClock() {
-  const pct = (hour / 24) * 100;
-  bar.style.background = `linear-gradient(to right, var(--night) 0%, var(--night) ${(phases[0].to+1)/24*100}%, var(--morning) ${(phases[1].from)/24*100}%, var(--morning) ${(phases[1].to+1)/24*100}%, var(--noon) ${(phases[2].from)/24*100}%, var(--noon) ${(phases[2].to+1)/24*100}%, var(--evening) ${(phases[3].from)/24*100}%, var(--evening) 100%)`;
-  pp.style.left = `${pct}%`;
-  summary.textContent = `${phaseFor(hour).emoji}  ${phaseFor(hour).name} · ${pad(hour)}:00  ·  ${weekdays[(dayCount-1)%7]}  ${date.month}/${date.day}/${date.year}`;
+  <div id="time-label"></div>
+  <p   id="day-label"></p>
+  <p   id="weekday-label"></p>
+  <p   id="date-label"></p>
+  <p   id="summary-label"></p>
+
+  <div id="bar-container">
+    <button class="nav-arrow" id="prev-btn" title="Previous hour">&#8249;</button>
+    <div id="day-bar"></div>
+    <div id="progress-pointer"></div>
+    <button class="nav-arrow" id="next-btn" title="Next hour">&#8250;</button>
+  </div>
+`;
+document.body.appendChild(clock);
+
+/* ── UI toggle ────────────────────────── */
+function applyCollapsedUI(){
+  clock.classList.toggle('collapsed',collapsed);
+  document.getElementById('toggle-btn').innerText = collapsed?'▴':'▾';
+}
+document.getElementById('toggle-btn').onclick = () => {
+  collapsed = !collapsed; applyCollapsedUI(); saveState();
+};
+
+/* ── date editor ──────────────────────── */
+document.getElementById('edit-date-btn').onclick = () => {
+  const input = prompt('Enter date as DD/MM/YYYY',`${two(day)}/${two(month)}/${year}`);
+  if(!input) return;
+  const [d,m,y] = input.split('/').map(Number);
+  if(d>0&&d<=31&&m>0&&m<=12&&y>1900){
+    day=d; month=m; year=y; updateClock();
+  }
+};
+
+/* ── hour nav buttons ─────────────────── */
+document.getElementById('prev-btn').onclick = () => { hour = (hour+23)%24; updateClock(); };
+document.getElementById('next-btn').onclick = () => { hour = (hour+1)%24;  updateClock(); };
+
+/* ── keyboard shortcuts ───────────────── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft')  { hour=(hour+23)%24; updateClock(); }
+  if(e.key==='ArrowRight') { hour=(hour+1)%24;  updateClock(); }
+});
+
+/* ── rendering ────────────────────────── */
+function incrementDay(){
+  day++; const daysInMonth = new Date(year,month,0).getDate();
+  if(day>daysInMonth){day=1;month++; if(month>12){month=1;year++;}}
+}
+function currentPhase(h){
+  return phases.find(p => p.from<=p.to ? h>=p.from && h<=p.to
+                                      : h>=p.from || h<=p.to);
+}
+function updateClock(){
+  /* labels */
+  document.getElementById('time-label').innerText = labelHour(hour);
+  document.getElementById('day-label').innerText  = `Day ${two(day)}`;
+  document.getElementById('weekday-label').innerText = weekdays[(day+3)%7];
+  document.getElementById('date-label').innerText = `${two(day)}/${two(month)}/${year}`;
+
+  /* summary */
+  const phase = currentPhase(hour);
+  document.getElementById('summary-label').innerText = `${phase.emoji} Good ${phase.name}!`;
+
+  /* progress bar */
+  const pct = (hour+0.5)/24*100;
+  document.getElementById('progress-pointer').style.left = `${pct}%`;
+
   saveState();
 }
 
-/* ── draggable & resizable ─────────────── */
-clock.onmousedown = ev => {
-  if (ev.target !== clock) return;
-  const start = { x: ev.clientX, y: ev.clientY, ...pos, width: size.width };
-  document.onmousemove = ev2 => {
-    ev2.preventDefault();
-    pos.left = start.left + (ev2.clientX - start.x);
-    pos.top  = start.top  + (ev2.clientY - start.y);
-    clock.style.left = `${pos.left}px`; clock.style.top = `${pos.top}px`;
-  };
-  document.onmouseup = () => { document.onmousemove = null; document.onmouseup = null; saveState(); };
-};
-
-document.getElementById('resize-handle').onmousedown = ev => {
-  ev.stopPropagation();
-  const start = { x: ev.clientX, width: size.width };
-  document.onmousemove = ev2 => {
-    ev2.preventDefault();
-    size.width = Math.max(180, Math.min(start.width + ev2.clientX - start.x, 600));
-    clock.style.width = `${size.width}px`;
-  };
-  document.onmouseup = () => { document.onmousemove = null; document.onmouseup = null; saveState(); };
-};
-
-/* ── nav buttons ───────────────────────── */
-document.getElementById('prev-btn').onclick = () => { hour--; if (hour < 0) { hour = 23; decrementDay(); } updateClock(); };
-document.getElementById('next-btn').onclick = () => { hour++; if (hour > 23) { hour = 0; incrementDay(); } updateClock(); };
-document.getElementById('toggle-btn').onclick = () => { collapsed = !collapsed; applyCollapsedUI(); saveState(); };
-
-document.getElementById('edit-date-btn').onclick = () => {
-  const inp = prompt('Enter new date (MM/DD/YYYY):', `${date.month}/${date.day}/${date.year}`);
-  if (!inp) return;
-  const [mm, dd, yy] = inp.split('/').map(Number);
-  if ([mm, dd, yy].some(isNaN) || mm < 1 || mm > 12 || dd < 1 || dd > getDaysInMonth(mm, yy) || yy < 1)
-    return alert('Invalid date.');
-  date = { month: mm, day: dd, year: yy };
-  dayCount = ((yy - 1) * 360) + ((mm - 1) * 30) + dd;
+/* auto-advance */
+/* setInterval(() => {
+  hour++; if (hour > 23) { hour = 0; incrementDay(); }
   updateClock();
-};
+}, intervalMs); */  // DISABLED – widget now advances only via manual controls.
 
-/* ── day math ─────────────────────────── */
-function incrementDay() { dayCount++; date.day++; if (date.day > 30) { date.day = 1; date.month++; if (date.month > 12) { date.month = 1; date.year++; } } }
-function decrementDay() { dayCount--; date.day--; if (date.day < 1)  { date.day = 30; date.month--; if (date.month < 1) { date.month = 12; date.year--; } } }
-
-/* auto-advance disabled by user request */
-// setInterval removed — use the Prev / Next buttons to advance time manually.
-
-/* LLM interceptor (unchanged) */
+/* LLM interceptor */
 globalThis.injectTimeOfDay = async chat => {
   chat.unshift({ is_user:false, name:'System', send_date:Date.now(), mes:fullPrompt() });
 };
 
-/* ── init ─────────────────────────────── */
-loadState();
+/* init */
 applyCollapsedUI();
 updateClock();
