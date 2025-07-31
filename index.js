@@ -218,3 +218,53 @@ globalThis.injectTimeOfDay = async chat => {
 /* init */
 applyCollapsedUI();
 updateClock();
+/* ── PART 2: Story Manager ───────────────────────── */
+const storyContainer = document.createElement('div');
+storyContainer.id = 'story-manager-section';
+storyContainer.innerHTML = `
+  <h3>📚 Story Manager</h3>
+  <button id="summarize-chat-btn">Summarize Chat</button>
+  <select id="lorebook-entry-select">
+    <option value="entry1">Entry 1</option>
+    <option value="entry2">Entry 2</option>
+  </select>
+  <button id="update-lorebook-btn">Update Lorebook</button>
+  <textarea id="chat-summary" placeholder="Summary will appear here..." rows="4"></textarea>
+`;
+document.getElementById('calendar-clock').appendChild(storyContainer);
+
+/* ── PART 3: Suggestion Generator ────────────────── */
+const suggestionContainer = document.createElement('div');
+suggestionContainer.id = 'suggestion-generator-section';
+suggestionContainer.innerHTML = `
+  <h3>💡 Suggestion Generator</h3>
+  <select id="reference-entry-select">
+    <option value="entry1">Entry 1</option>
+    <option value="entry2">Entry 2</option>
+  </select>
+  <button id="generate-suggestion-btn">Generate First Message Suggestion</button>
+  <textarea id="message-suggestion" placeholder="Suggested first message..." rows="3"></textarea>
+`;
+document.getElementById('calendar-clock').appendChild(suggestionContainer);
+
+/* ── Logic for Story Tools ───────────────────────── */
+document.getElementById('summarize-chat-btn').onclick = () => {
+  // Placeholder logic for chat summarization
+  const fakeSummary = "Summary of the chat goes here based on current conversation.";
+  document.getElementById('chat-summary').value = fakeSummary;
+};
+
+document.getElementById('update-lorebook-btn').onclick = () => {
+  const entry = document.getElementById('lorebook-entry-select').value;
+  const content = document.getElementById('chat-summary').value;
+  localStorage.setItem(`lorebook_${entry}`, content);
+  alert(`Lorebook entry "${entry}" updated.`);
+};
+
+/* ── Logic for Suggestion Generator ──────────────── */
+document.getElementById('generate-suggestion-btn').onclick = () => {
+  const entry = document.getElementById('reference-entry-select').value;
+  const lore = localStorage.getItem(`lorebook_${entry}`) || "No lore found.";
+  const suggestion = `Based on "${entry}":\nLet's begin by referencing the last event...\n\n${lore.slice(0, 120)}...`;
+  document.getElementById('message-suggestion').value = suggestion;
+};
