@@ -1,89 +1,139 @@
-:root{
-  --gap:6px; --padding:14px; --radius:16px;
-  --font-body:.9rem; --font-title:1.15rem;
-  --bar-height:12px; --arrow-size:8px;
+:root {
+  --gap: 6px;
+  --padding: 14px;
+  --radius: 16px;
+  --font-body: 0.9rem;
+  --font-title: 1.15rem;
+  --bar-height: 12px;
+  --arrow-size: 8px;
 }
 
-/* main card */
-#calendar-clock{
-  position:fixed; background:#2e3138; min-width:180px;
-  border-radius:var(--radius); box-shadow:0 8px 22px rgba(0,0,0,.7);
-  color:#e2e4e7; font-family:'Inter',sans-serif;
-  user-select:none; cursor:move; z-index:9999;
+/* card */
+#calendar-clock {
+  position: fixed;
+  background: #2e3138;
+  min-width: 180px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.7);
+  color: #e2e4e7;
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+  cursor: move;
+  z-index: 9999;
 
-  overflow:hidden; transition:max-height .28s,padding .28s;
-  padding:var(--padding); max-height:680px;
-  display:flex; flex-direction:column; gap:var(--gap);
+  overflow: hidden;
+  transition: max-height .28s ease, padding .28s ease;
+  padding: var(--padding);
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
 }
 
-/* section headings */
-.section-title{
-  font-size:1rem; font-weight:700; color:#fff;
-  margin:6px 0 2px; text-align:center;
-  letter-spacing:.3px;
+/* corner buttons */
+#toggle-btn,
+#edit-date-btn {
+  position: absolute;
+  top: 6px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .75;
+  transition: opacity .2s;
 }
+#toggle-btn:hover,
+#edit-date-btn:hover { opacity: 1; }
+#toggle-btn   { left: 8px; }
+#edit-date-btn{ right: 8px; }
+#calendar-clock.collapsed #edit-date-btn { display: none; }
 
-/* small helper rows */
-.btn-row{display:flex; gap:6px; margin:4px 0;}
-#chat-summary{width:100%; font-family:inherit; resize:vertical;
-  background:#3b3f4a; color:#f0f2f5; border:none; border-radius:6px;
-  padding:6px; line-height:1.3;}
-#suggestion-output{margin:6px 0 0; font-size:var(--font-body); color:#fafafa;}
-
-/* keep ALL your old styles as-is (unchanged below) */
-/* …─────────────────────────────────────────────── */
-
-#toggle-btn,#edit-date-btn{position:absolute;top:6px;
-  background:transparent;border:none;font-size:18px;line-height:1;cursor:pointer;
-  opacity:.75;transition:opacity .2s;}
-#toggle-btn:hover,#edit-date-btn:hover{opacity:1;}
-#toggle-btn{left:8px;} #edit-date-btn{right:8px;}
-#calendar-clock.collapsed #edit-date-btn{display:none;}
-
-#time-label{font-size:var(--font-title);font-weight:600;color:#fff;text-align:center;}
-#day-label{font-size:var(--font-body);font-weight:600;color:#d0d2d6;margin:0;}
-#weekday-label{font-size:var(--font-body);font-weight:500;color:#c7c9ce;margin:0;}
-#date-label{font-size:calc(var(--font-body) - .06rem);
-  font-weight:500;color:#a5a7ac;margin:0 0 2px;}
+/* labels */
+#time-label   { font-size: var(--font-title); font-weight: 600; color:#fff; text-align:center; }
+#day-label    { font-size: var(--font-body);  font-weight: 600; color:#d0d2d6; margin:0; }
+#weekday-label{ font-size: var(--font-body);  font-weight: 500; color:#c7c9ce; margin:0; }
+#date-label   { font-size: calc(var(--font-body) - .06rem); font-weight: 500; color:#a5a7ac; margin:0 0 2px; }
 #day-label::after{
   content:'';display:block;width:46%;height:1px;margin:6px auto 4px;
-  background:linear-gradient(90deg,transparent,#4d515b 40%,#4d515b 60%,transparent);}
-#summary-label{display:none;font-size:var(--font-body);font-weight:600;color:#dcdedf;margin:0;}
+  background:linear-gradient(90deg,transparent,#4d515b 40%,#4d515b 60%,transparent);
+}
 
-#bar-container{width:100%;display:flex;align-items:center;}
-.nav-arrow{width:26px;height:26px;background:#3b3f4a;border:none;border-radius:6px;
-  color:#f6f7f8;font-size:17px;cursor:pointer;transition:background .2s;}
+/* summary line (collapsed) */
+#summary-label { display:none; font-size:var(--font-body); font-weight:600; color:#dcdedf; margin:0; }
+
+/* bar & pointer */
+#bar-container{ width:100%; display:flex; align-items:center; }
+.nav-arrow{
+  width:26px;height:26px;
+  background:#3b3f4a;border:none;border-radius:6px;color:#f6f7f8;
+  font-size:17px;cursor:pointer;transition:background .2s;
+}
 .nav-arrow:hover{background:#565a6c;}
 
-#progress-bar{flex:1;height:var(--bar-height);margin:0 var(--gap);border-radius:6px;
+#progress-bar{
+  flex:1;height:var(--bar-height);margin:0 var(--gap);border-radius:6px;
+  /*  Night → Dawn → Morning → Midday → Afternoon → Sunset → Evening → Night  */
   background:linear-gradient(
     to right,
-    #001d3a 0%,#001d3a 16.67%,#25386b 20.83%,#f28d35 25%,
-    #ffd658 45.83%,#87CEEB 50%,#73b7ff 66.67%,#ff724d 70.83%,
-    #ff724d 79.17%,#432d5c 87.5%,#001d3a 100%);
-  position:relative;}
-#progress-pointer{position:absolute;top:calc(100% + 2px);left:0%;
+    #001d3a 0%,            /* 00 */
+    #001d3a 16.67%,        /* 04 */
+    #25386b 20.83%,        /* 05 pre‑dawn */
+    #f28d35 25%,           /* 06 sunrise orange */
+    #ffd658 45.83%,        /* 11 bright morning yellow */
+    #87CEEB 50%,           /* 12 noon sky blue */
+    #73b7ff 66.67%,        /* 16 soft afternoon blue */
+    #ff724d 70.83%,        /* 17 sunset orange‑red */
+    #ff724d 79.17%,        /* 19 */
+    #432d5c 87.5%,         /* 21 dusk purple */
+    #001d3a 100%           /* 24 */
+  );
+  position:relative;
+}
+#progress-pointer{
+  position:absolute;top:calc(100% + 2px);left:0%;
   width:0;height:0;transform:translateX(-50%);
   border-left:var(--arrow-size) solid transparent;
   border-right:var(--arrow-size) solid transparent;
-  border-bottom:var(--arrow-size) solid #fafafa;transition:left .3s;}
+  border-bottom:var(--arrow-size) solid #fafafa;
+  transition:left .3s ease;
+}
 
-.hour-tick{position:absolute;top:-4px;width:1px;height:calc(var(--bar-height)+8px);
-  background:#fafafa;opacity:.45;transform:translateX(-50%);pointer-events:none;}
-.hour-tick.major{width:2px;height:calc(var(--bar-height)+10px);opacity:.85;}
+/* hour tick marks */
+.hour-tick{
+  position:absolute;
+  top:-4px;
+  width:1px;
+  height:calc(var(--bar-height) + 8px);
+  background:#fafafa;
+  opacity:.45;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+.hour-tick.major{
+  width:2px;
+  height:calc(var(--bar-height) + 10px);
+  opacity:.85;
+}
 
-#resize-handle{position:absolute;width:14px;height:14px;right:3px;bottom:3px;
-  cursor:se-resize;background:linear-gradient(135deg,transparent 40%,#c5c7cc 40%,#c5c7cc 60%,transparent 60%);
-  opacity:.65;}
+/* resize handle */
+#resize-handle{
+  position:absolute;
+  width:14px;height:14px;
+  right:3px;bottom:3px;
+  cursor:se-resize;
+  background:linear-gradient(135deg,transparent 40%,#c5c7cc 40%,#c5c7cc 60%,transparent 60%);
+  opacity:.65;
+}
 #calendar-clock.collapsed #resize-handle{display:none;}
 
-/* hide extras when collapsed */
-#calendar-clock.collapsed .section-title:not(:first-child),
-#calendar-clock.collapsed #story-manager,
-#calendar-clock.collapsed #suggestion-manager {display:none;}
-
+/* collapsed style */
 #calendar-clock.collapsed{
-  padding:10px 14px 12px;max-height:70px;gap:2px;}
+  padding:10px 14px 12px;
+  max-height:64px;
+  gap:2px;
+}
 #calendar-clock.collapsed #time-label,
 #calendar-clock.collapsed #bar-container,
 #calendar-clock.collapsed #day-label,
