@@ -1,6 +1,7 @@
 /* ──────────────────────────────────────────
-   Time-Cycle Gradient Clock  v3.3.0
-   • 24-hour system ― 1 hour passes every 5 real minutes
+   Time-Cycle Gradient Clock  v3.3.0 (Modified)
+   • 24-hour system ― manual hour navigation only
+   • Auto-advance removed
    • Bar shows 24 hour ticks + smooth day-night gradient
    • AM / PM added to labels & injected summary
 ────────────────────────────────────────── */
@@ -21,9 +22,6 @@ let date = { day: 1, month: 1, year: 1 };
 let collapsed = false;
 let pos  = { left: 6, top: 6 };
 let size = { width: 260 };
-
-/* one in-widget hour passes every 5 real minutes */
-const intervalMs = 5 * 60 * 1000;
 
 /* ── persistence ───────────────────────── */
 function loadState() {
@@ -66,7 +64,7 @@ const fullPrompt = () => {
 };
 /*  ▲▲▲  UPDATED SECTION  ▲▲▲  */
 
- /* ── build widget ─────────────────────── */
+/* ── build widget ─────────────────────── */
 const clock = document.createElement('div');
 clock.id = 'calendar-clock';
 clock.innerHTML = `
@@ -210,11 +208,7 @@ function updateClock() {
   saveState();
 }
 
-/* auto-advance */
-setInterval(() => {
-  hour++; if (hour > 23) { hour = 0; incrementDay(); }
-  updateClock();
-}, intervalMs);
+// Removed auto-advance setInterval to disable automatic time updates
 
 /* LLM interceptor */
 globalThis.injectTimeOfDay = async chat => {
