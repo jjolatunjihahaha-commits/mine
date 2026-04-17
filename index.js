@@ -1,8 +1,8 @@
 /* ──────────────────────────────────────────
-   Live-Sync Gradient Clock v4.1.0
+   Live-Sync Gradient Clock v4.3.0
    • Real-time browser sync
+   • Generic High-Precision Injection
    • Boundary-restricted dragging
-   • Realistic AI behavioral logic
 ────────────────────────────────────────── */
 
 const phases = [
@@ -26,23 +26,27 @@ const hr12 = h => ((h + 11) % 12) + 1;
 const fullPrompt = () => {
   const now = new Date();
   const h = now.getHours();
-  const m = String(now.getMinutes()).padStart(2, '0');
+  const m = now.getMinutes();
+  const mPad = String(m).padStart(2, '0');
   const phase = getPhase(h);
   
-  const timeString = `[Current Context: ${phase.name} ${phase.emoji}, ${weekdays[now.getDay()]}, ${hr12(h)}:${m} ${ampm(h)}, Date ${now.toLocaleDateString()}]`;
+  const timeString = `[Current Context: ${phase.name} ${phase.emoji}, ${weekdays[now.getDay()]}, ${hr12(h)}:${mPad} ${ampm(h)}, Date ${now.toLocaleDateString()}]`;
   
-  let instructions = `\n\n{{char}} is aware of the current time (${phase.name}). `;
+  // Generic high-accuracy instructions
+  let instructions = `\n\n{{char}} is strictly aware that the current time is exactly ${hr12(h)}:${mPad} ${ampm(h)}. `;
+  instructions += `{{char}} must maintain perfect temporal logic and situational awareness based on this specific minute. All actions, references to the passage of time, and future plans must be mathematically consistent with this timestamp. `;
+  
   if (phase.name === 'Night') {
-    instructions += `{{char}}'s responses should reflect exhaustion, quietness, or being in bed. If not physically present with {{user}}, {{char}} prefers texting over calling.`;
+    instructions += `{{char}}'s behavior reflects the late hour (e.g., lower energy, quiet environment). Communication is digital unless physically together.`;
   } else if (phase.name === 'Morning') {
-    instructions += `{{char}} is likely waking up, starting a morning routine, or feeling the initial energy of the day.`;
+    instructions += `{{char}}'s behavior reflects the start of the day and morning routines.`;
   } else if (phase.name === 'Noon') {
-    instructions += `It is the middle of the day. {{char}} is likely busy, active, or at work/school.`;
+    instructions += `{{char}}'s behavior reflects midday activity, professional or social obligations, and high wakefulness.`;
   } else {
-    instructions += `The day is winding down. {{char}} is likely relaxing or having dinner.`;
+    instructions += `{{char}}'s behavior reflects the transition into the evening and winding down.`;
   }
 
-  return `${timeString}${instructions}\n{{char}} will always behave realistically in alignment with this specific time and day.`;
+  return `${timeString}${instructions}\n{{char}} will always prioritize logical time-consistency in every response.`;
 };
 
 /* ── Build UI ──────────────────────────── */
@@ -71,15 +75,16 @@ clock.style.top = `${pos.top}px`;
 function updateClock() {
   const now = new Date();
   const h = now.getHours();
-  const m = String(now.getMinutes()).padStart(2, '0');
+  const m = now.getMinutes();
+  const mPad = String(m).padStart(2, '0');
   const phase = getPhase(h);
 
-  document.getElementById('time-label').textContent = `${phase.emoji} ${phase.name} — ${hr12(h)}:${m} ${ampm(h)}`;
+  document.getElementById('time-label').textContent = `${phase.emoji} ${phase.name} — ${hr12(h)}:${mPad} ${ampm(h)}`;
   document.getElementById('weekday-label').textContent = weekdays[now.getDay()];
   document.getElementById('date-label').textContent = now.toLocaleDateString();
-  document.getElementById('summary-label').textContent = `${hr12(h)}:${m} ${ampm(h)} (${phase.name})`;
+  document.getElementById('summary-label').textContent = `${hr12(h)}:${mPad} ${ampm(h)}`;
 
-  const pct = ((h + (now.getMinutes()/60)) / 24) * 100;
+  const pct = ((h + (m/60)) / 24) * 100;
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 }
 
@@ -103,23 +108,17 @@ clock.onmousedown = e => {
   document.onmousemove = ev => {
     let newX = ev.clientX - startX;
     let newY = ev.clientY - startY;
-
     const maxX = window.innerWidth - clock.offsetWidth - 10;
     const maxY = window.innerHeight - clock.offsetHeight - 10;
-    
     newX = Math.max(10, Math.min(newX, maxX));
     newY = Math.max(10, Math.min(newY, maxY));
-
     clock.style.left = `${newX}px`;
     clock.style.top = `${newY}px`;
   };
   
   document.onmouseup = () => {
     document.onmousemove = null;
-    localStorage.setItem('clockPos', JSON.stringify({
-      left: clock.offsetLeft,
-      top: clock.offsetTop
-    }));
+    localStorage.setItem('clockPos', JSON.stringify({ left: clock.offsetLeft, top: clock.offsetTop }));
   };
 };
 
