@@ -1,8 +1,8 @@
 /* ──────────────────────────────────────────
-   Live-Sync Gradient Clock v4.1.0
+   Live-Sync Gradient Clock v4.2.0
    • Real-time browser sync
    • Boundary-restricted dragging
-   • Realistic AI behavioral logic
+   • Explicit Context Injection Logic
 ────────────────────────────────────────── */
 
 const phases = [
@@ -104,7 +104,6 @@ clock.onmousedown = e => {
     let newX = ev.clientX - startX;
     let newY = ev.clientY - startY;
 
-    // Clamping logic: Prevent moving outside browser window
     const maxX = window.innerWidth - clock.offsetWidth - 10;
     const maxY = window.innerHeight - clock.offsetHeight - 10;
     
@@ -124,12 +123,19 @@ clock.onmousedown = e => {
   };
 };
 
-// Accuracy check every 10 seconds
 setInterval(updateClock, 10000);
 updateClock();
 applyUI();
 
 /* ── SillyTavern Interceptor ───────────── */
+// To keep it at the VERY TOP (Standard System Prompt level):
 globalThis.injectTimeOfDay = async chat => {
-  chat.unshift({ is_user: false, name: 'System', send_date: Date.now(), mes: fullPrompt() });
+  const timeMessage = { 
+    is_user: false, 
+    is_system: true, // Explicitly flag as system
+    name: 'System', 
+    send_date: Date.now(), 
+    mes: fullPrompt() 
+  };
+  chat.unshift(timeMessage); 
 };
