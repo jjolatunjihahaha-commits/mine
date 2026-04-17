@@ -90,7 +90,6 @@
   margin-top: 5px; 
 }
 
-/* Collapsed State */
 #calendar-clock.collapsed { 
   max-height: 45px; 
   padding: 5px 10px;
