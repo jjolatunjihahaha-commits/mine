@@ -1,8 +1,8 @@
 /* ──────────────────────────────────────────
-   Live-Sync Gradient Clock v4.2.0
+   Live-Sync Gradient Clock v4.3.0
    • Real-time browser sync
    • Boundary-restricted dragging
-   • Explicit Context Injection Logic
+   • Force-Top Injection Logic
 ────────────────────────────────────────── */
 
 const phases = [
@@ -128,14 +128,16 @@ updateClock();
 applyUI();
 
 /* ── SillyTavern Interceptor ───────────── */
-// To keep it at the VERY TOP (Standard System Prompt level):
 globalThis.injectTimeOfDay = async chat => {
   const timeMessage = { 
     is_user: false, 
-    is_system: true, // Explicitly flag as system
+    is_system: true, 
     name: 'System', 
     send_date: Date.now(), 
-    mes: fullPrompt() 
+    mes: fullPrompt(),
+    force_top: true // Some ST versions use this flag
   };
-  chat.unshift(timeMessage); 
+  
+  // Use splice to ensure it hits the absolute first position in the array
+  chat.splice(0, 0, timeMessage);
 };
