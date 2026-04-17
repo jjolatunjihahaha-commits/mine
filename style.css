@@ -62,13 +62,7 @@
 #progress-bar {
   height: 10px;
   border-radius: 5px;
-  background: linear-gradient(to right, 
-    #001d3a 0%, 
-    #f28d35 25%, 
-    #87CEEB 50%, 
-    #ff724d 75%, 
-    #001d3a 100%
-  );
+  background: linear-gradient(to right, #001d3a, #f28d35, #87CEEB, #ff724d, #001d3a);
   position: relative;
 }
 
@@ -98,9 +92,5 @@
 #calendar-clock.collapsed #time-label, 
 #calendar-clock.collapsed #weekday-label, 
 #calendar-clock.collapsed #date-label, 
-#calendar-clock.collapsed #bar-container { 
-  display: none; 
-}
-#calendar-clock.collapsed #summary-label { 
-  display: block; 
-}
+#calendar-clock.collapsed #bar-container { display: none; }
+#calendar-clock.collapsed #summary-label { display: block; }
