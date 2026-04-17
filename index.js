@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────
    Live-Sync Gradient Clock v4.3.0
    • Real-time browser sync
-   • Advanced Temporal Anchoring Prompt
+   • Advanced Temporal Prompt Engineering
    • Boundary-restricted dragging
 ────────────────────────────────────────── */
 
@@ -22,36 +22,33 @@ const getPhase = (h) => phases.find(p =>
 const ampm = h => (h < 12 ? 'AM' : 'PM');
 const hr12 = h => ((h + 11) % 12) + 1;
 
-/* ── Advanced Prompt Engineering ────────── */
+/* ── Advanced Prompt Engineering Logic ──── */
 const fullPrompt = () => {
   const now = new Date();
   const h = now.getHours();
-  const mPad = String(now.getMinutes()).padStart(2, '0');
+  const m = now.getMinutes();
+  const mPad = String(m).padStart(2, '0');
   const phase = getPhase(h);
-  const timeString = `${hr12(h)}:${mPad} ${ampm(h)}`;
-  const dateString = `${weekdays[now.getDay()]}, ${now.toLocaleDateString()}`;
-
-  // Temporal Anchoring & Pacing Directives
-  let prompt = `[SYSTEM NOTE: Strict Temporal Anchor]\n`;
-  prompt += `The current in-universe time is EXACTLY ${timeString} on ${dateString}.\n\n`;
-  prompt += `{{char}} MUST adhere to the following chronological rules:\n`;
-  prompt += `1. Accuracy: Acknowledge the exact time (${timeString}) when determining current actions, logic, and availability.\n`;
-  prompt += `2. Narrative Pacing: Progress the scene in realistic, minute-by-minute increments. Do not skip forward in time, hallucinate future events, or assume hours have passed unless explicitly directed by {{user}}.\n`;
   
-  // Environmental & Behavioral Nudges
-  prompt += `3. Phase Context: It is currently ${phase.name} ${phase.emoji}. `;
+  // 1. Absolute Anchoring
+  const systemClock = `[SYSTEM CLOCK: The current local time is ${hr12(h)}:${mPad} ${ampm(h)}. Phase: ${phase.name} ${phase.emoji}. Today is ${weekdays[now.getDay()]}, ${now.toLocaleDateString()}.]`;
   
+  // 2. Strict Chronological Directive (Generic & Accurate)
+  const temporalDirective = `[TEMPORAL DIRECTIVE: {{char}} is acutely aware of the exact time and date. All actions, dialogue, and perceptions of time passing must be logically anchored to the SYSTEM CLOCK. {{char}} must maintain precise chronological consistency, paying close attention to the exact hour and minute when referencing past events, estimating durations, or planning future actions.]`;
+  
+  // 3. Behavioral Grounding
+  let phaseDirective = `[ENVIRONMENT: `;
   if (phase.name === 'Night') {
-    prompt += `Maintain late-night environmental consistency (darkness, quietness). {{char}} should reflect appropriate energy levels (tiredness, sleeping, or relaxing).`;
+    phaseDirective += `It is nighttime. {{char}}'s behavior should realistically reflect the late hour (e.g., lowered energy, preparation for rest, quietness). If separated from {{user}}, asynchronous communication like text messaging is expected.]`;
   } else if (phase.name === 'Morning') {
-    prompt += `Maintain early-day environmental consistency (sunrise, morning light). {{char}} is likely waking up, doing morning routines, or starting their day.`;
+    phaseDirective += `It is morning. {{char}}'s behavior should realistically reflect the start of the day (e.g., waking routines, morning activities, rising energy).]`;
   } else if (phase.name === 'Noon') {
-    prompt += `Maintain mid-day environmental consistency (daylight). {{char}} is currently in the middle of their active daily schedule, work, or activities.`;
+    phaseDirective += `It is midday. {{char}} is likely engaged in their primary daily activities, responsibilities, or work.]`;
   } else {
-    prompt += `Maintain evening environmental consistency (sunset, dusk). {{char}} is likely concluding their daily tasks, dining, or winding down.`;
+    phaseDirective += `It is evening. {{char}}'s behavior should realistically reflect the day winding down (e.g., evening meals, relaxation, transitioning away from work).]`;
   }
 
-  return prompt;
+  return `${systemClock}\n${temporalDirective}\n${phaseDirective}`;
 };
 
 /* ── Build UI ──────────────────────────── */
@@ -113,14 +110,10 @@ clock.onmousedown = e => {
   document.onmousemove = ev => {
     let newX = ev.clientX - startX;
     let newY = ev.clientY - startY;
-    
-    // Boundary calculations
     const maxX = window.innerWidth - clock.offsetWidth - 10;
     const maxY = window.innerHeight - clock.offsetHeight - 10;
-    
     newX = Math.max(10, Math.min(newX, maxX));
     newY = Math.max(10, Math.min(newY, maxY));
-    
     clock.style.left = `${newX}px`;
     clock.style.top = `${newY}px`;
   };
@@ -137,5 +130,6 @@ applyUI();
 
 /* ── SillyTavern Interceptor ───────────── */
 globalThis.injectTimeOfDay = async chat => {
+  // Inject with a high priority formatting style
   chat.unshift({ is_user: false, name: 'System', send_date: Date.now(), mes: fullPrompt() });
 };
