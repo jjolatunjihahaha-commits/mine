@@ -7,10 +7,9 @@
 
 #calendar-clock {
   position: fixed;
-  top: 10px;
-  right: 10px;
   background: #2e3138;
   width: 240px;
+  max-width: 90vw;
   border-radius: var(--radius);
   box-shadow: 0 8px 22px rgba(0,0,0,0.6);
   color: #e2e4e7;
@@ -21,7 +20,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.3s ease, width 0.3s ease;
   overflow: hidden;
 }
 
@@ -33,17 +32,43 @@
   border: none;
   color: #fff;
   cursor: pointer;
+  font-size: 1.2rem;
   opacity: 0.6;
+  z-index: 10;
 }
 
-#time-label { font-size: var(--font-title); font-weight: 700; text-align: center; color: #fff; }
-#weekday-label, #date-label { font-size: var(--font-body); text-align: center; margin: 0; opacity: 0.8; }
+#time-label { 
+  font-size: var(--font-title); 
+  font-weight: 700; 
+  text-align: center; 
+  color: #fff; 
+  margin-top: 10px; 
+}
 
-#bar-container { width: 100%; margin-top: 5px; }
+#weekday-label, #date-label { 
+  font-size: var(--font-body); 
+  text-align: center; 
+  margin: 0; 
+  opacity: 0.8; 
+}
+
+#bar-container { 
+  width: 100%; 
+  margin-top: 5px; 
+  padding: 0 5px; 
+  box-sizing: border-box; 
+}
+
 #progress-bar {
   height: 10px;
   border-radius: 5px;
-  background: linear-gradient(to right, #001d3a, #f28d35, #87CEEB, #ff724d, #001d3a);
+  background: linear-gradient(to right, 
+    #001d3a 0%, 
+    #f28d35 25%, 
+    #87CEEB 50%, 
+    #ff724d 75%, 
+    #001d3a 100%
+  );
   position: relative;
 }
 
@@ -55,14 +80,28 @@
   border-right: 6px solid transparent;
   border-bottom: 8px solid #fff;
   transform: translateX(-50%);
+  transition: left 0.5s ease;
 }
 
-#summary-label { display: none; text-align: center; font-weight: bold; }
+#summary-label { 
+  display: none; 
+  text-align: center; 
+  font-weight: bold; 
+  margin-top: 5px; 
+}
 
 /* Collapsed State */
-#calendar-clock.collapsed { max-height: 45px; padding: 10px; }
+#calendar-clock.collapsed { 
+  max-height: 45px; 
+  padding: 5px 10px;
+  width: 160px;
+}
 #calendar-clock.collapsed #time-label, 
 #calendar-clock.collapsed #weekday-label, 
 #calendar-clock.collapsed #date-label, 
-#calendar-clock.collapsed #bar-container { display: none; }
-#calendar-clock.collapsed #summary-label { display: block; }
+#calendar-clock.collapsed #bar-container { 
+  display: none; 
+}
+#calendar-clock.collapsed #summary-label { 
+  display: block; 
+}
