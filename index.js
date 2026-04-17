@@ -1,8 +1,8 @@
 /* ──────────────────────────────────────────
-   Live-Sync Gradient Clock v5.0.0
-   • XML-based Temporal Injection for advanced LLMs
-   • Weekday/Weekend awareness
-   • Real-time browser sync & bounds checking
+   Live-Sync Gradient Clock v4.3.0
+   • Real-time browser sync
+   • Advanced Temporal Anchoring Prompt
+   • Boundary-restricted dragging
 ────────────────────────────────────────── */
 
 const phases = [
@@ -22,51 +22,36 @@ const getPhase = (h) => phases.find(p =>
 const ampm = h => (h < 12 ? 'AM' : 'PM');
 const hr12 = h => ((h + 11) % 12) + 1;
 
-/* ── Advanced XML Prompt Logic ──────────── */
+/* ── Advanced Prompt Engineering ────────── */
 const fullPrompt = () => {
   const now = new Date();
   const h = now.getHours();
-  const m = now.getMinutes();
-  const mPad = String(m).padStart(2, '0');
+  const mPad = String(now.getMinutes()).padStart(2, '0');
   const phase = getPhase(h);
-  const dayName = weekdays[now.getDay()];
-  const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
-  const dayType = isWeekend ? "Weekend" : "Weekday";
+  const timeString = `${hr12(h)}:${mPad} ${ampm(h)}`;
+  const dateString = `${weekdays[now.getDay()]}, ${now.toLocaleDateString()}`;
+
+  // Temporal Anchoring & Pacing Directives
+  let prompt = `[SYSTEM NOTE: Strict Temporal Anchor]\n`;
+  prompt += `The current in-universe time is EXACTLY ${timeString} on ${dateString}.\n\n`;
+  prompt += `{{char}} MUST adhere to the following chronological rules:\n`;
+  prompt += `1. Accuracy: Acknowledge the exact time (${timeString}) when determining current actions, logic, and availability.\n`;
+  prompt += `2. Narrative Pacing: Progress the scene in realistic, minute-by-minute increments. Do not skip forward in time, hallucinate future events, or assume hours have passed unless explicitly directed by {{user}}.\n`;
   
-  // Using XML tags drastically improves LLM adherence
-  let xmlPrompt = `\n<temporal_context>\n`;
-  xmlPrompt += `  <current_time>${hr12(h)}:${mPad} ${ampm(h)}</current_time>\n`;
-  xmlPrompt += `  <current_date>${dayName}, ${now.toLocaleDateString()}</current_date>\n`;
-  xmlPrompt += `  <phase>${phase.name} ${phase.emoji}</phase>\n`;
-  xmlPrompt += `  <day_type>${dayType}</day_type>\n`;
+  // Environmental & Behavioral Nudges
+  prompt += `3. Phase Context: It is currently ${phase.name} ${phase.emoji}. `;
   
-  xmlPrompt += `  <system_directives>\n`;
-  xmlPrompt += `    - Treat the <current_time> as an absolute, immutable anchor for this turn.\n`;
-  xmlPrompt += `    - Calculate all time-based events accurately from this exact minute.\n`;
-  
-  // Phase & Day-Type Logic
   if (phase.name === 'Night') {
-    xmlPrompt += `    - It is late night. Assume physical fatigue, low lighting, and resting states.\n`;
+    prompt += `Maintain late-night environmental consistency (darkness, quietness). {{char}} should reflect appropriate energy levels (tiredness, sleeping, or relaxing).`;
   } else if (phase.name === 'Morning') {
-    xmlPrompt += `    - It is morning. Assume waking routines, breakfast, and starting the day.\n`;
+    prompt += `Maintain early-day environmental consistency (sunrise, morning light). {{char}} is likely waking up, doing morning routines, or starting their day.`;
   } else if (phase.name === 'Noon') {
-    xmlPrompt += `    - It is midday. Assume peak daylight, high activity, or being in the middle of tasks.\n`;
+    prompt += `Maintain mid-day environmental consistency (daylight). {{char}} is currently in the middle of their active daily schedule, work, or activities.`;
   } else {
-    xmlPrompt += `    - It is evening. Assume the day is winding down, dinner time, or transition to rest.\n`;
+    prompt += `Maintain evening environmental consistency (sunset, dusk). {{char}} is likely concluding their daily tasks, dining, or winding down.`;
   }
 
-  if (isWeekend) {
-    xmlPrompt += `    - It is the weekend. {{char}} is likely off work/school, relaxing, or pursuing leisure/social activities.\n`;
-  } else if (dayName === 'Friday' && phase.name === 'Evening') {
-    xmlPrompt += `    - It is Friday night. {{char}} is likely relieved the work week is over and looking to unwind.\n`;
-  } else if (!isWeekend && phase.name !== 'Night') {
-    xmlPrompt += `    - It is a weekday. {{char}} is likely constrained by work, school, or daily obligations.\n`;
-  }
-
-  xmlPrompt += `  </system_directives>\n`;
-  xmlPrompt += `</temporal_context>\n`;
-
-  return xmlPrompt;
+  return prompt;
 };
 
 /* ── Build UI ──────────────────────────── */
@@ -87,10 +72,11 @@ document.body.appendChild(clock);
 /* ── State & Storage ───────────────────── */
 let collapsed = localStorage.getItem('clockCollapsed') === 'true';
 let pos = JSON.parse(localStorage.getItem('clockPos')) || { left: 20, top: 20 };
+
 clock.style.left = `${pos.left}px`;
 clock.style.top = `${pos.top}px`;
 
-/* ── Update UI ─────────────────────────── */
+/* ── Update Logic ──────────────────────── */
 function updateClock() {
   const now = new Date();
   const h = now.getHours();
@@ -98,7 +84,7 @@ function updateClock() {
   const mPad = String(m).padStart(2, '0');
   const phase = getPhase(h);
 
-  document.getElementById('time-label').textContent = `${phase.emoji} ${hr12(h)}:${mPad} ${ampm(h)}`;
+  document.getElementById('time-label').textContent = `${phase.emoji} ${phase.name} — ${hr12(h)}:${mPad} ${ampm(h)}`;
   document.getElementById('weekday-label').textContent = weekdays[now.getDay()];
   document.getElementById('date-label').textContent = now.toLocaleDateString();
   document.getElementById('summary-label').textContent = `${hr12(h)}:${mPad} ${ampm(h)}`;
@@ -107,7 +93,7 @@ function updateClock() {
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 }
 
-/* ── Interaction & Bounds ──────────────── */
+/* ── Dragging & Bounds ─────────────────── */
 const applyUI = () => {
   clock.classList.toggle('collapsed', collapsed);
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
@@ -123,14 +109,20 @@ clock.onmousedown = e => {
   if (e.target.id === 'toggle-btn') return;
   const startX = e.clientX - clock.offsetLeft;
   const startY = e.clientY - clock.offsetTop;
-  
+
   document.onmousemove = ev => {
     let newX = ev.clientX - startX;
     let newY = ev.clientY - startY;
+    
+    // Boundary calculations
     const maxX = window.innerWidth - clock.offsetWidth - 10;
     const maxY = window.innerHeight - clock.offsetHeight - 10;
-    clock.style.left = `${Math.max(10, Math.min(newX, maxX))}px`;
-    clock.style.top = `${Math.max(10, Math.min(newY, maxY))}px`;
+    
+    newX = Math.max(10, Math.min(newX, maxX));
+    newY = Math.max(10, Math.min(newY, maxY));
+    
+    clock.style.left = `${newX}px`;
+    clock.style.top = `${newY}px`;
   };
   
   document.onmouseup = () => {
