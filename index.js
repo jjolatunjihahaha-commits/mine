@@ -1,7 +1,8 @@
 /* ──────────────────────────────────────────
-   Live-Sync Gradient Clock v4.0.0
+   Live-Sync Gradient Clock v4.1.0
    • Real-time browser sync
-   • Enhanced AI behavioral logic
+   • Boundary-restricted dragging
+   • Realistic AI behavioral logic
 ────────────────────────────────────────── */
 
 const phases = [
@@ -27,25 +28,21 @@ const fullPrompt = () => {
   const h = now.getHours();
   const m = String(now.getMinutes()).padStart(2, '0');
   const phase = getPhase(h);
-  const day = weekdays[now.getDay()];
-  const dateStr = now.toLocaleDateString();
-
-  let timeString = `[Current Context: ${phase.name} ${phase.emoji}, ${day}, ${hr12(h)}:${m} ${ampm(h)}, Date ${dateStr}]`;
   
-  // Realistic behavioral instructions for the AI
+  const timeString = `[Current Context: ${phase.name} ${phase.emoji}, ${weekdays[now.getDay()]}, ${hr12(h)}:${m} ${ampm(h)}, Date ${now.toLocaleDateString()}]`;
+  
   let instructions = `\n\n{{char}} is aware of the current time (${phase.name}). `;
-  
   if (phase.name === 'Night') {
-    instructions += `{{char}}'s responses should reflect exhaustion, quietness, or being in bed. If not in the same room, {{char}} prefers texting over calling.`;
+    instructions += `{{char}}'s responses should reflect exhaustion, quietness, or being in bed. If not physically present with {{user}}, {{char}} prefers texting over calling.`;
   } else if (phase.name === 'Morning') {
-    instructions += `{{char}} is likely waking up, getting coffee, or starting a routine. Responses might be slow or energetic depending on personality.`;
+    instructions += `{{char}} is likely waking up, starting a morning routine, or feeling the initial energy of the day.`;
   } else if (phase.name === 'Noon') {
-    instructions += `It is the middle of the day. {{char}} is likely active, working, or out. Responses should be realistic regarding their current availability.`;
-  } else if (phase.name === 'Evening') {
-    instructions += `The day is winding down. {{char}} might be having dinner or relaxing.`;
+    instructions += `It is the middle of the day. {{char}} is likely busy, active, or at work/school.`;
+  } else {
+    instructions += `The day is winding down. {{char}} is likely relaxing or having dinner.`;
   }
 
-  return `${timeString}${instructions}\n{{char}} will always behave in alignment with this specific time and day.`;
+  return `${timeString}${instructions}\n{{char}} will always behave realistically in alignment with this specific time and day.`;
 };
 
 /* ── Build UI ──────────────────────────── */
@@ -63,7 +60,12 @@ clock.innerHTML = `
 `;
 document.body.appendChild(clock);
 
+/* ── State & Storage ───────────────────── */
 let collapsed = localStorage.getItem('clockCollapsed') === 'true';
+let pos = JSON.parse(localStorage.getItem('clockPos')) || { left: 20, top: 20 };
+
+clock.style.left = `${pos.left}px`;
+clock.style.top = `${pos.top}px`;
 
 /* ── Update Logic ──────────────────────── */
 function updateClock() {
@@ -81,7 +83,7 @@ function updateClock() {
   document.getElementById('progress-pointer').style.left = `${pct}%`;
 }
 
-/* ── UI Interaction ────────────────────── */
+/* ── Dragging & Bounds ─────────────────── */
 const applyUI = () => {
   clock.classList.toggle('collapsed', collapsed);
   document.getElementById('toggle-btn').textContent = collapsed ? '▸' : '▾';
@@ -93,19 +95,37 @@ document.getElementById('toggle-btn').onclick = () => {
   applyUI();
 };
 
-// Dragging functionality
 clock.onmousedown = e => {
   if (e.target.id === 'toggle-btn') return;
-  const start = { x: e.clientX, y: e.clientY };
-  const orig = { left: clock.offsetLeft, top: clock.offsetTop };
+  const startX = e.clientX - clock.offsetLeft;
+  const startY = e.clientY - clock.offsetTop;
+
   document.onmousemove = ev => {
-    clock.style.left = `${orig.left + ev.clientX - start.x}px`;
-    clock.style.top = `${orig.top + ev.clientY - start.y}px`;
+    let newX = ev.clientX - startX;
+    let newY = ev.clientY - startY;
+
+    // Clamping logic: Prevent moving outside browser window
+    const maxX = window.innerWidth - clock.offsetWidth - 10;
+    const maxY = window.innerHeight - clock.offsetHeight - 10;
+    
+    newX = Math.max(10, Math.min(newX, maxX));
+    newY = Math.max(10, Math.min(newY, maxY));
+
+    clock.style.left = `${newX}px`;
+    clock.style.top = `${newY}px`;
   };
-  document.onmouseup = () => document.onmousemove = null;
+  
+  document.onmouseup = () => {
+    document.onmousemove = null;
+    localStorage.setItem('clockPos', JSON.stringify({
+      left: clock.offsetLeft,
+      top: clock.offsetTop
+    }));
+  };
 };
 
-setInterval(updateClock, 10000); // Update every 10s for accuracy
+// Accuracy check every 10 seconds
+setInterval(updateClock, 10000);
 updateClock();
 applyUI();
 
