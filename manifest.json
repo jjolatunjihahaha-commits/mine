@@ -1,8 +1,8 @@
 {
-  "display_name": "Live Time-Cycle Clock v4.2.0",
-  "version": "4.2.0",
+  "display_name": "Live Time-Cycle Clock v4.3.0",
+  "version": "4.3.0",
   "author": "YourName",
-  "loading_order": 1,
+  "loading_order": 0,
   "js": "index.js",
   "css": "style.css",
   "generate_interceptor": "injectTimeOfDay"
