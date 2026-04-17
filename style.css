@@ -1,142 +1,68 @@
 :root {
-  --gap: 6px;
   --padding: 14px;
   --radius: 16px;
   --font-body: 0.9rem;
-  --font-title: 1.15rem;
-  --bar-height: 12px;
-  --arrow-size: 8px;
+  --font-title: 1.1rem;
 }
 
-/* card */
 #calendar-clock {
   position: fixed;
+  top: 10px;
+  right: 10px;
   background: #2e3138;
-  min-width: 180px;
+  width: 240px;
   border-radius: var(--radius);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.7);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.6);
   color: #e2e4e7;
   font-family: 'Inter', sans-serif;
-  user-select: none;
-  cursor: move;
-  z-index: 9999;
-
-  overflow: hidden;
-  transition: max-height .28s ease, padding .28s ease;
   padding: var(--padding);
-  max-height: 500px;
+  z-index: 9999;
+  cursor: move;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--gap);
+  gap: 8px;
+  transition: max-height 0.3s ease;
+  overflow: hidden;
 }
 
-/* corner buttons */
-#toggle-btn,
-#edit-date-btn {
+#toggle-btn {
   position: absolute;
   top: 6px;
+  left: 8px;
   background: transparent;
   border: none;
-  font-size: 18px;
-  line-height: 1;
+  color: #fff;
   cursor: pointer;
-  opacity: .75;
-  transition: opacity .2s;
-}
-#toggle-btn:hover,
-#edit-date-btn:hover { opacity: 1; }
-#toggle-btn   { left: 8px; }
-#edit-date-btn{ right: 8px; }
-#calendar-clock.collapsed #edit-date-btn { display: none; }
-
-/* labels */
-#time-label   { font-size: var(--font-title); font-weight: 600; color:#fff; text-align:center; }
-#day-label    { font-size: var(--font-body);  font-weight: 600; color:#d0d2d6; margin:0; }
-#weekday-label{ font-size: var(--font-body);  font-weight: 500; color:#c7c9ce; margin:0; }
-#date-label   { font-size: calc(var(--font-body) - .06rem); font-weight: 500; color:#a5a7ac; margin:0 0 2px; }
-#day-label::after{
-  content:'';display:block;width:46%;height:1px;margin:6px auto 4px;
-  background:linear-gradient(90deg,transparent,#4d515b 40%,#4d515b 60%,transparent);
+  opacity: 0.6;
 }
 
-/* summary line (collapsed) */
-#summary-label { display:none; font-size:var(--font-body); font-weight:600; color:#dcdedf; margin:0; }
+#time-label { font-size: var(--font-title); font-weight: 700; text-align: center; color: #fff; }
+#weekday-label, #date-label { font-size: var(--font-body); text-align: center; margin: 0; opacity: 0.8; }
 
-/* bar & pointer */
-#bar-container{ width:100%; display:flex; align-items:center; }
-.nav-arrow{
-  width:26px;height:26px;
-  background:#3b3f4a;border:none;border-radius:6px;color:#f6f7f8;
-  font-size:17px;cursor:pointer;transition:background .2s;
-}
-.nav-arrow:hover{background:#565a6c;}
-
-#progress-bar{
-  flex:1;height:var(--bar-height);margin:0 var(--gap);border-radius:6px;
-  /*  Night → Dawn → Morning → Midday → Afternoon → Sunset → Evening → Night  */
-  background:linear-gradient(
-    to right,
-    #001d3a 0%,            /* 00 */
-    #001d3a 16.67%,        /* 04 */
-    #25386b 20.83%,        /* 05 pre‑dawn */
-    #f28d35 25%,           /* 06 sunrise orange */
-    #ffd658 45.83%,        /* 11 bright morning yellow */
-    #87CEEB 50%,           /* 12 noon sky blue */
-    #73b7ff 66.67%,        /* 16 soft afternoon blue */
-    #ff724d 70.83%,        /* 17 sunset orange‑red */
-    #ff724d 79.17%,        /* 19 */
-    #432d5c 87.5%,         /* 21 dusk purple */
-    #001d3a 100%           /* 24 */
-  );
-  position:relative;
-}
-#progress-pointer{
-  position:absolute;top:calc(100% + 2px);left:0%;
-  width:0;height:0;transform:translateX(-50%);
-  border-left:var(--arrow-size) solid transparent;
-  border-right:var(--arrow-size) solid transparent;
-  border-bottom:var(--arrow-size) solid #fafafa;
-  transition:left .3s ease;
+#bar-container { width: 100%; margin-top: 5px; }
+#progress-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(to right, #001d3a, #f28d35, #87CEEB, #ff724d, #001d3a);
+  position: relative;
 }
 
-/* hour tick marks */
-.hour-tick{
-  position:absolute;
-  top:-4px;
-  width:1px;
-  height:calc(var(--bar-height) + 8px);
-  background:#fafafa;
-  opacity:.45;
-  transform:translateX(-50%);
-  pointer-events:none;
-}
-.hour-tick.major{
-  width:2px;
-  height:calc(var(--bar-height) + 10px);
-  opacity:.85;
+#progress-pointer {
+  position: absolute;
+  top: 12px;
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid #fff;
+  transform: translateX(-50%);
 }
 
-/* resize handle */
-#resize-handle{
-  position:absolute;
-  width:14px;height:14px;
-  right:3px;bottom:3px;
-  cursor:se-resize;
-  background:linear-gradient(135deg,transparent 40%,#c5c7cc 40%,#c5c7cc 60%,transparent 60%);
-  opacity:.65;
-}
-#calendar-clock.collapsed #resize-handle{display:none;}
+#summary-label { display: none; text-align: center; font-weight: bold; }
 
-/* collapsed style */
-#calendar-clock.collapsed{
-  padding:10px 14px 12px;
-  max-height:64px;
-  gap:2px;
-}
-#calendar-clock.collapsed #time-label,
-#calendar-clock.collapsed #bar-container,
-#calendar-clock.collapsed #day-label,
-#calendar-clock.collapsed #weekday-label,
-#calendar-clock.collapsed #date-label{display:none;}
-#calendar-clock.collapsed #summary-label{display:block;}
+/* Collapsed State */
+#calendar-clock.collapsed { max-height: 45px; padding: 10px; }
+#calendar-clock.collapsed #time-label, 
+#calendar-clock.collapsed #weekday-label, 
+#calendar-clock.collapsed #date-label, 
+#calendar-clock.collapsed #bar-container { display: none; }
+#calendar-clock.collapsed #summary-label { display: block; }
